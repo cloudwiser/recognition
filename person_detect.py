@@ -21,6 +21,32 @@ else:
 
 # -------------------------------------------------
 
+COCO_classes = ["background", "person", "bicycle", "car", "motorcycle",
+    "airplane", "bus", "train", "truck", "boat", "traffic light", "fire hydrant",
+    "unknown", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse",
+    "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "unknown", "backpack",
+    "umbrella", "unknown", "unknown", "handbag", "tie", "suitcase", "frisbee", "skis",
+    "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard",
+    "surfboard", "tennis racket", "bottle", "unknown", "wine glass", "cup", "fork", "knife",
+    "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog",
+    "pizza", "donut", "cake", "chair", "couch", "potted plant", "bed", "unknown", "dining table",
+    "unknown", "unknown", "toilet", "unknown", "tv", "laptop", "mouse", "remote", "keyboard",
+    "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "unknown",
+    "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" ]
+
+confidence_thresh = 0.75    # Confidence threshold - was 0.3
+detect_classes    = {1}     # only trigger on people in MSCOCO set   
+
+# model_path = "./mask_rcnn_inception_v2_coco_2018_01_28/"
+# textGraph = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
+model_path = "./ssd_mobilenet_v2_coco_2018_03_29/"
+textGraph = "./ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
+modelWeights = model_path + "frozen_inference_graph.pb"
+
+winName = 'CNN Person Detection'
+
+# -------------------------------------------------
+
 # For each frame, draw a bounding box for each detected object
 def detectObjectsInFrame(frame, classes, detect_classes, boxes, masks, confidence_thresh):
     # Output size of masks is NxCxHxW where
@@ -37,9 +63,10 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, masks, confidenc
     for i in range(num_detections):
         box = boxes[0, 0, i]
         score = box[2]
+
         if score > confidence_thresh:
             class_id = int(box[1])
-            
+
             # Is this class one that we are interested in?
             if class_id not in detect_classes:
                 continue
@@ -104,10 +131,6 @@ def loadTFDNN(modelWeights, textGraph):
 # -------------------------------------------------
 
 if __name__ == "__main__":
-    # Initialize our parameters
-    confidence_thresh = 0.5  # Confidence threshold - was 0.5
-    detect_classes    = {0}  # only trigger on people in MSCOCO set   
-
     # Extract the video source
     capture = getVideoSource()
     
@@ -115,17 +138,13 @@ if __name__ == "__main__":
     classes = loadCOCOclasses("mscoco_labels.names")
 
     # Load the graph and weights for the CNN model
-    model_path = "./mask_rcnn_inception_v2_coco_2018_01_28/"
-    textGraph = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
-    modelWeights = model_path + "frozen_inference_graph.pb"
     net = loadTFDNN(modelWeights, textGraph)
     
     # Set the output window name (assuming there is a GUI output path)
-    winName = 'Mask-RCNN Person Detection'
     cv.namedWindow(winName, cv.WINDOW_NORMAL)
 
     # Frame processing loop
-    while cv.waitKey(1) < 0:
+    while True:
         # Get a frame from the video/image/stream
         hasFrame, frame = capture.read()
         
@@ -142,14 +161,16 @@ if __name__ == "__main__":
         net.setInput(blob)
 
         # Run the forward pass to get output from the output layers
-        boxes, masks = net.forward(['detection_out_final', 'detection_masks'])
+        # boxes, masks = net.forward(['detection_out_final', 'detection_masks'])    # Mask RCNN
+        boxes = net.forward()                                                       # SSD Mobilenet
 
         # Find the bounding box and mask for any selected and present objects
-        found = detectObjectsInFrame(frame, classes, detect_classes, boxes, masks, confidence_thresh)
+        # found = detectObjectsInFrame(frame, classes, detect_classes, boxes, masks, confidence_thresh) # Mask RCNN
+        found = detectObjectsInFrame(frame, classes, detect_classes, boxes, None, confidence_thresh)    # SSD Mobilenet
 
         # Output our inference performance at the top of the frame
         t, _ = net.getPerfProfile()
-        label = 'Mask-RCNN inference time/frame : %0.0f ms' % abs(t * 1000.0 / cv.getTickFrequency())
+        label = 'CNN inference time/frame : %0.0f ms' % abs(t * 1000.0 / cv.getTickFrequency())
         cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
         # Write the frame with the detection boxes to disk
@@ -159,3 +180,10 @@ if __name__ == "__main__":
 
         # Display the output if there is a GUI output path
         cv.imshow(winName, frame)
+        
+         # Esc to quit
+        if cv.waitKey(1) == 27: 
+            frame.release()
+            break
+
+cv.destroyAllWindows()
