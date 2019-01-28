@@ -114,9 +114,10 @@ if __name__ == "__main__":
     # Load the COCO classes
     classes = loadCOCOclasses("mscoco_labels.names")
 
-    # Load the graph and weights for the mask RCNN model
+    # Load the graph and weights for the CNN model
+    model_path = "./mask_rcnn_inception_v2_coco_2018_01_28/"
     textGraph = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
-    modelWeights = "./mask_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb"
+    modelWeights = model_path + "frozen_inference_graph.pb"
     net = loadTFDNN(modelWeights, textGraph)
     
     # Set the output window name (assuming there is a GUI output path)
