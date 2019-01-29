@@ -44,6 +44,7 @@ textGraph = "./ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
 modelWeights = model_path + "frozen_inference_graph.pb"
 
 winName = 'CNN Person Detection'
+headless = False
 
 # -------------------------------------------------
 
@@ -141,7 +142,8 @@ if __name__ == "__main__":
     net = loadTFDNN(modelWeights, textGraph)
     
     # Set the output window name (assuming there is a GUI output path)
-    cv.namedWindow(winName, cv.WINDOW_NORMAL)
+    if not headless:
+        cv.namedWindow(winName, cv.WINDOW_NORMAL)
 
     # Frame processing loop
     while True:
@@ -151,7 +153,6 @@ if __name__ == "__main__":
         # Bail if we've reached end of the input
         if not hasFrame:
             print("Processing complete!!!")
-            cv.waitKey(3000)
             break
 
         # Create a 4D blob from the frame
@@ -179,11 +180,13 @@ if __name__ == "__main__":
             cv.imwrite(outputFile, frame.astype(np.uint8))
 
         # Display the output if there is a GUI output path
-        cv.imshow(winName, frame)
+        if not headless:
+            cv.imshow(winName, frame)
         
          # Esc to quit
-        if cv.waitKey(1) == 27: 
+        if not headless and cv.waitKey(1) == 27: 
             frame.release()
             break
 
-cv.destroyAllWindows()
+if not headless:
+    cv.destroyAllWindows()
