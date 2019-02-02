@@ -1,27 +1,34 @@
-##### Reference
-See https://github.com/opencv/opencv/wiki/TensorFlow-Object-Detection-API
+##### Useful references
+https://github.com/opencv/opencv/wiki/TensorFlow-Object-Detection-API
+https://github.com/opencv/opencv_extra/tree/master/testdata/dnn
 
-##### Linux: (Mask RCNN)
+##### Installation on Linux: (Mask RCNN)
 
 `wget http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz`
 
 `tar zxvf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz`
 
-##### MacOS: (Mask RCNN)
+##### Install on MacOS: (Mask RCNN)
 
 `curl -O http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz`
 
 `tar zxvf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz`
 
-##### OpenCV:
+##### OpenCV installtion:
 
-Install 4.0.0 if possible as using versions before 3.4.3 will throw CNN moddel exceptions:
+Install 4.0.0 - not using versions before 3.4.3 will throw CNN moddel exceptions given they are not supported:
 
 `pip install opencv-python`
 
-##### Graph creation:
+If you are running without the need or access to an X server, there is the lightweight headless python package which can be installed:
 
-e.g. python tf_text_graph_faster_rcnn.py --input /path/to/model.pb --config /path/to/example.config --output /path/to/graph.pbtxt
+`pip install opencv-python-headless`
+
+##### TF graph creation:
+
+The pbtxt file for the associated CNN model architecture should be on the tf or opencv GitHub - see Useful References above - but, if not, can be generated thus:
+
+python tf_text_graph_faster_rcnn.py --input /path/to/model.pb --config /path/to/example.config --output /path/to/graph.pbtxt
 
 `python tf_text_graph_ssd.py --input ./ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb --config ./ssd_mobilenet_v2_coco.config --output ./ssd_mobilenet_v2_coco_2019_01_28.pbtxt`
 
@@ -34,6 +41,6 @@ e.g. python tf_text_graph_faster_rcnn.py --input /path/to/model.pb --config /pat
 `python3 person_detect.py`  
 (uses your local webcam as video source)
 
-##### Test clips:
+##### Licence-free video clips for testing:
 
 https://videos.pexels.com/videos/time-lapse-video-of-runners-855789

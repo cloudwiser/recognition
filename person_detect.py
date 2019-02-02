@@ -1,5 +1,5 @@
 # -------------------------------------------------
-#  Mask RCNN-based Person Detector
+# CNN-based Person Detector
 # 
 # With huge thanks to Satya Mallick & Sunita Nayak
 # https://github.com/spmallick/learnopencv/tree/master/Mask-RCNN
@@ -43,7 +43,7 @@ model_path = "./ssd_mobilenet_v2_coco_2018_03_29/"
 textGraph = "./ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
 modelWeights = model_path + "frozen_inference_graph.pb"
 
-winName = 'CNN Person Detection'
+winName = 'CNN Person Detect'
 headless = False
 
 # -------------------------------------------------
@@ -91,7 +91,7 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, masks, confidenc
 
 # Parse arguments for video source
 def getVideoSource():
-    parser = argparse.ArgumentParser(description='Use this script to run Mask-RCNN person detector')
+    parser = argparse.ArgumentParser(description='Use this script to run the CNN-based person detector')
     parser.add_argument('--video', help='Path to video file')
     parser.add_argument('--stream', help='Path to video stream')
     args = parser.parse_args()
@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
         # Output our inference performance at the top of the frame
         t, _ = net.getPerfProfile()
-        label = 'CNN inference time/frame : %0.0f ms' % abs(t * 1000.0 / cv.getTickFrequency())
+        label = winName + ' time/frame : %0.0f ms' % abs(t * 1000.0 / cv.getTickFrequency())
         cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
         # Write the frame with the detection boxes to disk
