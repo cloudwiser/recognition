@@ -90,30 +90,28 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, confidence_thres
             cv.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 1)
     return found
 
-# Parse argument for output path
-def getOutputPath():
+# Parse arguments
+def getArguments():
     parser = argparse.ArgumentParser(description='Use this script to run the CNN-based person detector')
+    parser.add_argument('--video', help='Path to video file')
+    parser.add_argument('--stream', help='Path to video stream')
     parser.add_argument('--out', help='Path to output directory')
     args = parser.parse_args()
-    # Parse any command line args and setup the capture source and output file
+    # Parse the command line args for the output path
     outpath = DEFAULT_OUTPUT_PATH
     if (args.out):
         # Get the output path for images
         if not os.path.exists(args.out):
-            print("Output path: ", args.out, " doesn't exist : using ", outpath)
-            if not os.path.exists(outpath):
-                os.mkdir(outpath)
+            print("Output path:", args.out, " doesn't exist - creating:", args.out)
+            os.mkdir(args.out)
+            if os.path.exists(args.out):
+                outpath = args.out
+            else:
+                print("Error creating output path: ", args.out)
+                sys.exit(1)
         else:
             outpath = args.out
-    return outpath
-
-# Parse arguments for video source
-def getVideoSource():
-    parser = argparse.ArgumentParser(description='Use this script to run the CNN-based person detector')
-    parser.add_argument('--video', help='Path to video file')
-    parser.add_argument('--stream', help='Path to video stream')
-    args = parser.parse_args()
-    # Parse any command line args and setup the capture source
+    # Parse the command line args for the capture source
     if (args.video):
         # Open a video file
         if not os.path.isfile(args.video):
@@ -131,7 +129,7 @@ def getVideoSource():
     else:
         # ...or default to a local webcam stream
         capture = cv.VideoCapture(0)
-    return capture
+    return capture, outpath
 
 # COCO classes file loader
 def loadCOCOclasses(classes_file_path):
@@ -152,11 +150,8 @@ def loadTFDNN(model_weights, text_graph):
 # -------------------------------------------------
 
 if __name__ == "__main__":
-    # Extract the video source
-    capture = getVideoSource()
-    
-     # Extract the output directory for annotated images
-    outpath = getOutputPath()
+    # Extract the video source and output directory for annotated images
+    capture, outpath = getArguments()
 
     # Load the COCO classes
     classes = loadCOCOclasses("mscoco_labels.names")
