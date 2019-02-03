@@ -34,22 +34,23 @@ COCO_classes = ["background", "person", "bicycle", "car", "motorcycle",
     "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "unknown",
     "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" ]
 
-confidence_thresh = 0.75    # Confidence threshold - was 0.3
-detect_classes    = {1}     # only trigger on people in MSCOCO set   
+CONFIDENCE_THRESHOLD = 0.75    # Confidence threshold - was 0.3
+DETECT_CLASSES       = {1}     # only trigger on people in MSCOCO set   
 
-# model_path = "./mask_rcnn_inception_v2_coco_2018_01_28/"
-# textGraph = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
-model_path = "./ssd_mobilenet_v2_coco_2018_03_29/"
-textGraph = "./ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
-modelWeights = model_path + "frozen_inference_graph.pb"
+# MODEL_PATH = "./mask_rcnn_inception_v2_coco_2018_01_28/"
+# TEXT_GRAPH = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
+MODEL_PATH = "./ssd_mobilenet_v2_coco_2018_03_29/"
+TEXT_GRAPH = "./ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
+MODEL_WEIGHTS = MODEL_PATH + "frozen_inference_graph.pb"
+DEFAULT_OUTPUT_PATH = './out'
+WIN_NAME = 'CNN Person Detect'
 
-winName = 'CNN Person Detect'
 headless = False
 
 # -------------------------------------------------
 
 # For each frame, draw a bounding box for each detected object
-def detectObjectsInFrame(frame, classes, detect_classes, boxes, masks, confidence_thresh):
+def detectObjectsInFrame(frame, classes, detect_classes, boxes, confidence_thresh):
     # Output size of masks is NxCxHxW where
     # N - number of detected boxes
     # C - number of classes (excluding background)
@@ -86,8 +87,25 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, masks, confidenc
             bottom = max(0, min(bottom, frameH - 1))
 
             # Draw bounding box on the image
-            cv.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 2)
+            cv.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 1)
     return found
+
+# Parse argument for output path
+def getOutputPath():
+    parser = argparse.ArgumentParser(description='Use this script to run the CNN-based person detector')
+    parser.add_argument('--out', help='Path to output directory')
+    args = parser.parse_args()
+    # Parse any command line args and setup the capture source and output file
+    outpath = DEFAULT_OUTPUT_PATH
+    if (args.out):
+        # Get the output path for images
+        if not os.path.exists(args.out):
+            print("Output path: ", args.out, " doesn't exist : using ", outpath)
+            if not os.path.exists(outpath):
+                os.mkdir(outpath)
+        else:
+            outpath = args.out
+    return outpath
 
 # Parse arguments for video source
 def getVideoSource():
@@ -95,19 +113,21 @@ def getVideoSource():
     parser.add_argument('--video', help='Path to video file')
     parser.add_argument('--stream', help='Path to video stream')
     args = parser.parse_args()
-    # Parse any command line args and setup the capture source and output file
+    # Parse any command line args and setup the capture source
     if (args.video):
         # Open a video file
         if not os.path.isfile(args.video):
             print("Input video file: ", args.video, " doesn't exist")
             sys.exit(1)
-        capture = cv.VideoCapture(args.video)
+        else:
+            capture = cv.VideoCapture(args.video)
     elif (args.stream):
         # Open a video stream
         if not urlparse(args.stream).scheme:
             print("Input video stream: ", args.stream, " doesn't exist")
             sys.exit(1)
-        capture = cv.VideoCapture(args.stream)
+        else:
+            capture = cv.VideoCapture(args.stream)
     else:
         # ...or default to a local webcam stream
         capture = cv.VideoCapture(0)
@@ -122,9 +142,9 @@ def loadCOCOclasses(classes_file_path):
     return classes
 
 # TF DNN loader loader
-def loadTFDNN(modelWeights, textGraph):
+def loadTFDNN(model_weights, text_graph):
     # Load the network
-    net = cv.dnn.readNetFromTensorflow(modelWeights, textGraph)
+    net = cv.dnn.readNetFromTensorflow(model_weights, text_graph)
     net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
     net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
     return net
@@ -135,15 +155,18 @@ if __name__ == "__main__":
     # Extract the video source
     capture = getVideoSource()
     
+     # Extract the output directory for annotated images
+    outpath = getOutputPath()
+
     # Load the COCO classes
     classes = loadCOCOclasses("mscoco_labels.names")
 
     # Load the graph and weights for the CNN model
-    net = loadTFDNN(modelWeights, textGraph)
+    net = loadTFDNN(MODEL_WEIGHTS, TEXT_GRAPH)
     
     # Set the output window name (assuming there is a GUI output path)
     if not headless:
-        cv.namedWindow(winName, cv.WINDOW_NORMAL)
+        cv.namedWindow(WIN_NAME, cv.WINDOW_NORMAL)
 
     # Frame processing loop
     while True:
@@ -167,21 +190,21 @@ if __name__ == "__main__":
 
         # Find the bounding box and mask for any selected and present objects
         # found = detectObjectsInFrame(frame, classes, detect_classes, boxes, masks, confidence_thresh) # Mask RCNN
-        found = detectObjectsInFrame(frame, classes, detect_classes, boxes, None, confidence_thresh)    # SSD Mobilenet
+        found = detectObjectsInFrame(frame, classes, DETECT_CLASSES, boxes, CONFIDENCE_THRESHOLD)    # SSD Mobilenet
 
         # Output our inference performance at the top of the frame
         t, _ = net.getPerfProfile()
-        label = winName + ' time/frame : %0.0f ms' % abs(t * 1000.0 / cv.getTickFrequency())
+        label = WIN_NAME + ' time/frame : %0.0f ms' % abs(t * 1000.0 / cv.getTickFrequency())
         cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
         # Write the frame with the detection boxes to disk
         if (found):
-            outputFile = './out/' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.jpg'
+            outputFile = outpath + '/' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.jpg'
             cv.imwrite(outputFile, frame.astype(np.uint8))
 
         # Display the output if there is a GUI output path
         if not headless:
-            cv.imshow(winName, frame)
+            cv.imshow(WIN_NAME, frame)
         
          # Esc to quit
         if not headless and cv.waitKey(1) == 27: 
