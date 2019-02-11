@@ -168,10 +168,10 @@ if __name__ == "__main__":
         # Get a frame from the video/image/stream
         hasFrame, frame = capture.read()
         
-        # Bail if we've reached end of the input
+        # Skip if there is no frame
         if not hasFrame:
-            print("Processing complete!!!")
-            break
+            print("No frame found - processing skipped")
+            continue
 
         # Create a 4D blob from the frame
         blob = cv.dnn.blobFromImage(frame, swapRB=True, crop=False)
