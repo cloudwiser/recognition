@@ -56,7 +56,7 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, confidence_thres
     # C - number of classes (excluding background)
     # HxW - segmentation shape
     
-    found = False
+    _found = False
     # num_classes = masks.shape[1]
     num_detections = boxes.shape[2]
     frameH = frame.shape[0]
@@ -73,7 +73,7 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, confidence_thres
             if class_id not in detect_classes:
                 continue
             else:
-                found = True
+                _found = True
 
             # Extract the bounding box
             left = int(frameW * box[3])
@@ -88,7 +88,7 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, confidence_thres
 
             # Draw bounding box on the image
             cv.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 1)
-    return found
+    return _found
 
 # Parse arguments
 def getArguments():
@@ -96,21 +96,25 @@ def getArguments():
     parser.add_argument('--video', help='Path to video file')
     parser.add_argument('--stream', help='Path to video stream')
     parser.add_argument('--out', help='Path to output directory')
+    parser.add_argument('--headless', help='Flag to inhibit any X output', action='store_true', default=False)
     args = parser.parse_args()
     # Parse the command line args for the output path
-    outpath = DEFAULT_OUTPUT_PATH
+    _outpath = DEFAULT_OUTPUT_PATH
+    _headless = False
+    if (args.headless):
+        _headless = True
     if (args.out):
         # Get the output path for images
         if not os.path.exists(args.out):
             print("Output path:", args.out, " doesn't exist - creating:", args.out)
             os.mkdir(args.out)
             if os.path.exists(args.out):
-                outpath = args.out
+                _outpath = args.out
             else:
                 print("Error creating output path: ", args.out)
                 sys.exit(1)
         else:
-            outpath = args.out
+            _outpath = args.out
     # Parse the command line args for the capture source
     if (args.video):
         # Open a video file
@@ -118,40 +122,40 @@ def getArguments():
             print("Input video file: ", args.video, " doesn't exist")
             sys.exit(1)
         else:
-            capture = cv.VideoCapture(args.video)
+            _capture = cv.VideoCapture(args.video)
     elif (args.stream):
         # Open a video stream
         if not urlparse(args.stream).scheme:
             print("Input video stream: ", args.stream, " doesn't exist")
             sys.exit(1)
         else:
-            capture = cv.VideoCapture(args.stream)
+            _capture = cv.VideoCapture(args.stream)
     else:
         # ...or default to a local webcam stream
-        capture = cv.VideoCapture(0)
-    return capture, outpath
+        _capture = cv.VideoCapture(0)
+    return _capture, _outpath, _headless
 
 # COCO classes file loader
 def loadCOCOclasses(classes_file_path):
     # Load names of COCO classes
-    classes = None
+    _classes = None
     with open(classes_file_path, 'rt') as f:
-        classes = f.read().rstrip('\n').split('\n')
-    return classes
+        _classes = f.read().rstrip('\n').split('\n')
+    return _classes
 
 # TF DNN loader loader
 def loadTFDNN(model_weights, text_graph):
     # Load the network
-    net = cv.dnn.readNetFromTensorflow(model_weights, text_graph)
-    net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
-    net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
-    return net
+    _net = cv.dnn.readNetFromTensorflow(model_weights, text_graph)
+    _net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
+    _net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
+    return _net
 
 # -------------------------------------------------
 
 if __name__ == "__main__":
     # Extract the video source and output directory for annotated images
-    capture, outpath = getArguments()
+    capture, outpath, headless = getArguments()
 
     # Load the COCO classes
     classes = loadCOCOclasses("mscoco_labels.names")
