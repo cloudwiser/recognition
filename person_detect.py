@@ -168,6 +168,7 @@ if __name__ == "__main__":
         cv.namedWindow(WIN_NAME, cv.WINDOW_NORMAL)
 
     # Frame processing loop
+    print("Starting frame processing...")
     while True:
         # Get a frame from the video/image/stream
         hasFrame, frame = capture.read()
@@ -210,5 +211,6 @@ if __name__ == "__main__":
             frame.release()
             break
 
+print("Stopping frame processing")
 if not headless:
     cv.destroyAllWindows()
