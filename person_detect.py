@@ -34,8 +34,9 @@ COCO_classes = ["background", "person", "bicycle", "car", "motorcycle",
     "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "unknown",
     "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" ]
 
-CONFIDENCE_THRESHOLD = 0.75    # Confidence threshold - was 0.3
-DETECT_CLASSES       = {1}     # only trigger on people in MSCOCO set   
+DEFAULT_THRESHOLD   = 0.75             # Confidence threshold - was 0.3
+DETECT_CLASSES      = {1}              # Only trigger on people in MSCOCO set   
+BOUNDING_COLOR      = (255, 178, 50)
 
 # MODEL_PATH = "./mask_rcnn_inception_v2_coco_2018_01_28/"
 # TEXT_GRAPH = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
@@ -48,13 +49,13 @@ WIN_NAME = 'CNN Person Detect'
 # -------------------------------------------------
 
 # For each frame, draw a bounding box for each detected object
-def detectObjectsInFrame(frame, classes, detect_classes, boxes, confidence_thresh):
+def detectObjectsInFrame(frame, classes, detect_classes, boxes, confidence_thresh, showlabels):
     # Output size of masks is NxCxHxW where
     # N - number of detected boxes
     # C - number of classes (excluding background)
     # HxW - segmentation shape
     
-    _found = False
+    _found = 0
     # num_classes = masks.shape[1]
     num_detections = boxes.shape[2]
     frameH = frame.shape[0]
@@ -71,7 +72,7 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, confidence_thres
             if class_id not in detect_classes:
                 continue
             else:
-                _found = True
+                _found += 1
 
             # Extract the bounding box
             left = int(frameW * box[3])
@@ -85,7 +86,19 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, confidence_thres
             bottom = max(0, min(bottom, frameH - 1))
 
             # Draw bounding box on the image
-            cv.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 1)
+            cv.rectangle(frame, (left, top), (right, bottom), BOUNDING_COLOR, 1)
+
+            # Show the object info?
+            if showlabels:
+                # create the object label
+                assert(class_id < len(classes))
+                label = '%s:%.2f' % (classes[class_id], score)
+                labelsize, baseline = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                labeltop = max(top, labelsize[1])
+                cv.rectangle(frame, (left, labeltop - round(1.5*labelsize[1])), 
+                                    (left + round(1.5*labelsize[0]), labeltop + baseline), 
+                                    BOUNDING_COLOR, cv.FILLED)
+                cv.putText(frame, label, (left, labeltop), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 1)
     return _found
 
 # Parse arguments
@@ -94,22 +107,32 @@ def getArguments():
     parser.add_argument('--video', help='Path to video file')
     parser.add_argument('--stream', help='Path to video stream')
     parser.add_argument('--out', help='Path to output directory')
-    parser.add_argument('--headless', help='Flag to inhibit any X output', action='store_true', default=False)
+    parser.add_argument('--headless', help='Disable X-server output', action='store_true', default=False)
+    parser.add_argument('--showlabels', help='Enable object labels', action='store_true', default=False)
+    parser.add_argument('--threshold', help='Set the detection threshold', type=float, default=DEFAULT_THRESHOLD)
     args = parser.parse_args()
-    # Parse the command line args for the output path
+
     _outpath = DEFAULT_OUTPUT_PATH
     _headless = False
+    _showlabels = False
+    _threshold = DEFAULT_THRESHOLD
+
+    # Process the command line arguments
+    if (args.showlabels):
+        _showlabels = True
     if (args.headless):
         _headless = True
+    if (args.threshold):
+        _threshold = float(args.threshold)
     if (args.out):
         # Get the output path for images
         if not os.path.exists(args.out):
-            print("Output path:", args.out, " doesn't exist - creating:", args.out)
+            print("INFO: output path:", args.out, " doesn't exist...creating:", args.out)
             os.mkdir(args.out)
             if os.path.exists(args.out):
                 _outpath = args.out
             else:
-                print("Error creating output path: ", args.out)
+                print("ERR: can't create output path: ", args.out)
                 sys.exit(1)
         else:
             _outpath = args.out
@@ -117,21 +140,21 @@ def getArguments():
     if (args.video):
         # Open a video file
         if not os.path.isfile(args.video):
-            print("Input video file: ", args.video, " doesn't exist")
+            print("ERR: input video file: ", args.video, " doesn't exist")
             sys.exit(1)
         else:
             _capture = cv.VideoCapture(args.video)
     elif (args.stream):
         # Open a video stream
         if not urlparse(args.stream).scheme:
-            print("Input video stream: ", args.stream, " doesn't exist")
+            print("ERR: input video stream: ", args.stream, " doesn't exist")
             sys.exit(1)
         else:
             _capture = cv.VideoCapture(args.stream)
     else:
         # ...or default to a local webcam stream
         _capture = cv.VideoCapture(0)
-    return _capture, _outpath, _headless
+    return _capture, _outpath, _headless, _showlabels, _threshold
 
 # COCO classes file loader
 def loadCOCOclasses(classes_file_path):
@@ -153,7 +176,7 @@ def loadTFDNN(model_weights, text_graph):
 
 if __name__ == "__main__":
     # Extract the video source and output directory for annotated images
-    capture, outpath, headless = getArguments()
+    capture, outpath, headless, showlabels, threshold = getArguments()
 
     # Load the COCO classes
     classes = loadCOCOclasses("mscoco_labels.names")
@@ -166,14 +189,14 @@ if __name__ == "__main__":
         cv.namedWindow(WIN_NAME, cv.WINDOW_NORMAL)
 
     # Frame processing loop
-    print("Starting frame processing...")
+    print("INFO: starting frame processing...")
     while True:
         # Get a frame from the video/image/stream
         hasFrame, frame = capture.read()
         
         # Skip if there is no frame
         if not hasFrame:
-            print("No frame found - processing skipped")
+            print("WARN: no frame found - processing skipped")
             continue
 
         # Create a 4D blob from the frame
@@ -188,7 +211,7 @@ if __name__ == "__main__":
 
         # Find the bounding box and mask for any selected and present objects
         # found = detectObjectsInFrame(frame, classes, detect_classes, boxes, masks, confidence_thresh) # Mask RCNN
-        found = detectObjectsInFrame(frame, classes, DETECT_CLASSES, boxes, CONFIDENCE_THRESHOLD)    # SSD Mobilenet
+        found = detectObjectsInFrame(frame, classes, DETECT_CLASSES, boxes, threshold, showlabels)    # SSD Mobilenet
 
         # Output our inference performance at the top of the frame
         t, _ = net.getPerfProfile()
@@ -196,7 +219,7 @@ if __name__ == "__main__":
         cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
         # Write the frame with the detection boxes to disk
-        if (found):
+        if found > 0:
             outputFile = outpath + '/' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.jpg'
             cv.imwrite(outputFile, frame.astype(np.uint8))
 
@@ -209,6 +232,6 @@ if __name__ == "__main__":
             frame.release()
             break
 
-print("Stopping frame processing")
+print("INF: stopped frame processing")
 if not headless:
     cv.destroyAllWindows()
