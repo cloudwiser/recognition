@@ -45,8 +45,6 @@ MODEL_WEIGHTS = MODEL_PATH + "frozen_inference_graph.pb"
 DEFAULT_OUTPUT_PATH = './out'
 WIN_NAME = 'CNN Person Detect'
 
-headless = False
-
 # -------------------------------------------------
 
 # For each frame, draw a bounding box for each detected object
