@@ -5,7 +5,7 @@
 # https://github.com/spmallick/learnopencv/tree/master/Mask-RCNN
 # https://www.learnopencv.com/deep-learning-based-object-detection-and-instance-segmentation-using-mask-r-cnn-in-opencv-python-c/
 #
-# Nick Hall : cloudwise : 2019
+# Nick Hall : cloudwise.co : 2019
 # -------------------------------------------------
 
 import sys
