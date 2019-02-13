@@ -1,7 +1,7 @@
 # -------------------------------------------------
-# CNN-based Person Detector
+# CNN-based Object Detector
 # 
-# With huge thanks to Satya Mallick & Sunita Nayak
+# With thanks to Satya Mallick & Sunita Nayak
 # https://github.com/spmallick/learnopencv/tree/master/Mask-RCNN
 # https://www.learnopencv.com/deep-learning-based-object-detection-and-instance-segmentation-using-mask-r-cnn-in-opencv-python-c/
 #
@@ -34,9 +34,9 @@ COCO_classes = ["background", "person", "bicycle", "car", "motorcycle",
     "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "unknown",
     "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" ]
 
-DEFAULT_THRESHOLD   = 0.75             # Confidence threshold - was 0.3
-DETECT_CLASSES      = {1}              # Only trigger on people in MSCOCO set   
-BOUNDING_COLOR      = (255, 178, 50)
+DEFAULT_THRESHOLD    = 0.75             # Confidence threshold - was 0.3
+DEFAULT_OBJECT_CLASS = {1}              # Person from the COCO set   
+BOUNDING_COLOR       = (255, 178, 50)
 
 # MODEL_PATH = "./mask_rcnn_inception_v2_coco_2018_01_28/"
 # TEXT_GRAPH = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
@@ -44,7 +44,7 @@ MODEL_PATH = "./ssd_mobilenet_v2_coco_2018_03_29/"
 TEXT_GRAPH = "./ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
 MODEL_WEIGHTS = MODEL_PATH + "frozen_inference_graph.pb"
 DEFAULT_OUTPUT_PATH = './out'
-WIN_NAME = 'CNN Person Detect'
+WIN_NAME = 'CNN Object Detect'
 
 # -------------------------------------------------
 
@@ -103,19 +103,21 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, confidence_thres
 
 # Parse arguments
 def getArguments():
-    parser = argparse.ArgumentParser(description='Use this script to run the CNN-based person detector')
-    parser.add_argument('--video', help='Path to video file')
-    parser.add_argument('--stream', help='Path to video stream')
-    parser.add_argument('--out', help='Path to output directory')
-    parser.add_argument('--headless', help='Disable X-server output', action='store_true', default=False)
-    parser.add_argument('--showlabels', help='Enable object labels', action='store_true', default=False)
-    parser.add_argument('--threshold', help='Set the detection threshold', type=float, default=DEFAULT_THRESHOLD)
+    parser = argparse.ArgumentParser(description='Use this script to run the CNN-based object detector')
+    parser.add_argument('--video', help='path to video file')
+    parser.add_argument('--stream', help='path to video stream')
+    parser.add_argument('--out', help='path to output directory')
+    parser.add_argument('--headless', help='disable X-server output', action='store_true')
+    parser.add_argument('--showlabels', help='enable object labels', action='store_true')
+    parser.add_argument('--threshold', help='set the detection threshold', type=float, default=DEFAULT_THRESHOLD)
+    parser.add_argument('--classes', help='[comma-delimited] list of COCO object classes', type=str)
     args = parser.parse_args()
 
     _outpath = DEFAULT_OUTPUT_PATH
     _headless = False
     _showlabels = False
     _threshold = DEFAULT_THRESHOLD
+    _objects = DEFAULT_OBJECT_CLASS
 
     # Process the command line arguments
     if (args.showlabels):
@@ -124,6 +126,10 @@ def getArguments():
         _headless = True
     if (args.threshold):
         _threshold = float(args.threshold)
+    if (args.classes):
+        _detect_classes = [int(item) for item in args.classes.split(',')]
+        # Use list > set > list to remove any duplicate classes
+        _detect_classes = list(set(_detect_classes))
     if (args.out):
         # Get the output path for images
         if not os.path.exists(args.out):
@@ -154,7 +160,7 @@ def getArguments():
     else:
         # ...or default to a local webcam stream
         _capture = cv.VideoCapture(0)
-    return _capture, _outpath, _headless, _showlabels, _threshold
+    return _capture, _outpath, _headless, _showlabels, _threshold, _detect_classes
 
 # COCO classes file loader
 def loadCOCOclasses(classes_file_path):
@@ -176,7 +182,7 @@ def loadTFDNN(model_weights, text_graph):
 
 if __name__ == "__main__":
     # Extract the video source and output directory for annotated images
-    capture, outpath, headless, showlabels, threshold = getArguments()
+    capture, outpath, headless, showlabels, threshold, detect_classes = getArguments()
 
     # Load the COCO classes
     classes = loadCOCOclasses("mscoco_labels.names")
@@ -210,8 +216,8 @@ if __name__ == "__main__":
         boxes = net.forward()                                                       # SSD Mobilenet
 
         # Find the bounding box and mask for any selected and present objects
-        # found = detectObjectsInFrame(frame, classes, detect_classes, boxes, masks, confidence_thresh) # Mask RCNN
-        found = detectObjectsInFrame(frame, classes, DETECT_CLASSES, boxes, threshold, showlabels)    # SSD Mobilenet
+        # found = detectObjectsInFrame(frame, classes, detect_classes, boxes, masks, threshold)    # Mask RCNN
+        found = detectObjectsInFrame(frame, classes, detect_classes, boxes, threshold, showlabels) # SSD Mobilenet
 
         # Output our inference performance at the top of the frame
         t, _ = net.getPerfProfile()
