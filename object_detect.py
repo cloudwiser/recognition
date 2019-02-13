@@ -49,7 +49,7 @@ WIN_NAME = 'CNN Object Detect'
 # -------------------------------------------------
 
 # For each frame, draw a bounding box for each detected object
-def detectObjectsInFrame(frame, classes, detect_classes, boxes, confidence_thresh, showlabels):
+def detectObjectsInFrame(frame, classes, detect_classes, boxes, threshold, showlabels):
     # Output size of masks is NxCxHxW where
     # N - number of detected boxes
     # C - number of classes (excluding background)
@@ -65,7 +65,7 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, confidence_thres
         box = boxes[0, 0, i]
         score = box[2]
 
-        if score > confidence_thresh:
+        if score > threshold:
             class_id = int(box[1])
 
             # Is this class one that we are interested in?
