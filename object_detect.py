@@ -14,6 +14,7 @@ import argparse
 import numpy as np
 import os.path
 import datetime
+import time
 if sys.version_info.major == 3:
     from urllib.parse import urlparse   # Python 3.x
 else:
@@ -45,6 +46,7 @@ TEXT_GRAPH = "./ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
 MODEL_WEIGHTS = MODEL_PATH + "frozen_inference_graph.pb"
 DEFAULT_OUTPUT_PATH = './out'
 WIN_NAME = 'CNN Object Detect'
+NO_FRAME_SLEEP = (30 * 1)
 
 # -------------------------------------------------
 
@@ -202,7 +204,8 @@ if __name__ == "__main__":
         
         # Skip if there is no frame
         if not hasFrame:
-            print("WARN: no frame found - processing skipped")
+            print("WARN: no frame...wait {} sec(s)".format(NO_FRAME_SLEEP))
+            time.sleep(NO_FRAME_SLEEP)
             continue
 
         # Create a 4D blob from the frame
