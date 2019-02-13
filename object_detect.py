@@ -117,7 +117,7 @@ def getArguments():
     _headless = False
     _showlabels = False
     _threshold = DEFAULT_THRESHOLD
-    _objects = DEFAULT_OBJECT_CLASS
+    _detect_classes = DEFAULT_OBJECT_CLASS
 
     # Process the command line arguments
     if (args.showlabels):
