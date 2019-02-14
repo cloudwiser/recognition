@@ -47,6 +47,7 @@ MODEL_WEIGHTS = MODEL_PATH + "frozen_inference_graph.pb"
 DEFAULT_OUTPUT_PATH = './out'
 WIN_NAME = 'recog : cloudwise.co : '
 NO_FRAME_SLEEP = (30 * 1)
+CV_TEXT_SIZE = 0.5
 
 # -------------------------------------------------
 
@@ -95,13 +96,13 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, threshold, showl
                 # create the object label
                 assert(class_id < len(classes))
                 label = '%s:%.2f' % (classes[class_id], score)
-                labelsize, baseline = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                labelsize, baseline = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, CV_TEXT_SIZE, 1)
                 labeltop = max(top, labelsize[1])
-                top = int(labeltop - round(1.5*labelsize[1]))
-                right = int(left + round(1.5*labelsize[0]))
+                top = int(labeltop - round(1.25*labelsize[1]))
+                right = int(left + round(1.25*labelsize[0]))
                 bottom = labeltop + baseline
                 cv.rectangle(frame, (left, top), (right, bottom), BOUNDING_COLOR, cv.FILLED)
-                cv.putText(frame, label, (left, labeltop), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 1)
+                cv.putText(frame, label, (left, labeltop), cv.FONT_HERSHEY_SIMPLEX, CV_TEXT_SIZE, (0,0,0), 1)
     return _found
 
 # Parse arguments
@@ -226,7 +227,7 @@ if __name__ == "__main__":
         # Output our inference performance at the top of the frame
         t, _ = net.getPerfProfile()
         label = WIN_NAME + ' time/frame = %0.0f ms' % abs(t * 1000.0 / cv.getTickFrequency())
-        cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+        cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, CV_TEXT_SIZE, (0, 0, 0), 1)
 
         # Write the frame with the detection boxes to disk
         if found > 0 and outpath:
