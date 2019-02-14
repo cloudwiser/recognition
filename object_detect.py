@@ -97,9 +97,10 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, threshold, showl
                 label = '%s:%.2f' % (classes[class_id], score)
                 labelsize, baseline = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
                 labeltop = max(top, labelsize[1])
-                cv.rectangle(frame, (left, labeltop - round(1.5*labelsize[1])), 
-                                    (left + round(1.5*labelsize[0]), labeltop + baseline), 
-                                    BOUNDING_COLOR, cv.FILLED)
+                top = int(labeltop - round(1.5*labelsize[1]))
+                right = int(left + round(1.5*labelsize[0]))
+                bottom = labeltop + baseline
+                cv.rectangle(frame, (left, top), (right, bottom), BOUNDING_COLOR, cv.FILLED)
                 cv.putText(frame, label, (left, labeltop), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 1)
     return _found
 
@@ -236,7 +237,7 @@ if __name__ == "__main__":
         if not headless:
             cv.imshow(WIN_NAME, frame)
         
-         # Esc to quit
+        # Esc to quit
         if not headless and cv.waitKey(1) == 27: 
             frame.release()
             break
