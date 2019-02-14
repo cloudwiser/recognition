@@ -54,7 +54,7 @@ CV_TEXT_SIZE = 0.5
 # -------------------------------------------------
 
 # For each frame, draw a bounding box for each detected object
-def detectObjectsInFrame(frame, classes, detect_classes, boxes, threshold, showlabels):
+def detectObjectsInFrame(frame, classes, detect_classes, boxes, threshold, showlabels, blur):
     # Output size of masks is NxCxHxW where
     # N - number of detected boxes
     # C - number of classes (excluding background)
@@ -93,6 +93,14 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, threshold, showl
             # Draw bounding box on the image
             cv.rectangle(frame, (left, top), (right, bottom), BOUNDING_COLOR, 1)
 
+            # Blur the bounding box for privacy?
+            if blur:
+                blur_region = frame[top:bottom, left:right]
+                # apply a gaussian blur on the bounding region
+                blur_region = cv.GaussianBlur(blur_region, (23, 23), 30)
+                # merge this blurry rectangle into the frame
+                frame[top:top + blur_region.shape[0], left:left + blur_region.shape[1]] = blur_region                
+
             # Show the object info?
             if showlabels:
                 # create the object label
@@ -115,6 +123,7 @@ def getArguments():
     parser.add_argument('--out', help='path to output directory')
     parser.add_argument('--headless', help='disable X-server output', action='store_true')
     parser.add_argument('--showlabels', help='enable object labels', action='store_true')
+    parser.add_argument('--blur', help='blur object region(s)', action='store_true')
     parser.add_argument('--threshold', help='set the detection threshold', type=float, default=DEFAULT_THRESHOLD)
     parser.add_argument('--classes', help='[comma-delimited] list of COCO object classes', type=str)
     args = parser.parse_args()
@@ -122,6 +131,7 @@ def getArguments():
     _outpath = None
     _headless = False
     _showlabels = False
+    _blur = False
     _threshold = DEFAULT_THRESHOLD
     _detect_classes = DEFAULT_OBJECT_CLASS
 
@@ -130,6 +140,8 @@ def getArguments():
         _showlabels = True
     if (args.headless):
         _headless = True
+    if (args.blur):
+        _blur = True
     if (args.threshold):
         _threshold = float(args.threshold)
     if (args.classes):
@@ -166,7 +178,7 @@ def getArguments():
     else:
         # ...or default to a local webcam stream
         _capture = cv.VideoCapture(0)
-    return _capture, _outpath, _headless, _showlabels, _threshold, _detect_classes
+    return _capture, _outpath, _headless, _showlabels, _threshold, _detect_classes, _blur
 
 # COCO classes file loader
 def loadCOCOclasses(classes_file_path):
@@ -188,7 +200,7 @@ def loadTFDNN(model_weights, text_graph):
 
 if __name__ == "__main__":
     # Extract the video source and output directory for annotated images
-    capture, outpath, headless, showlabels, threshold, detect_classes = getArguments()
+    capture, outpath, headless, showlabels, threshold, detect_classes, blur = getArguments()
 
     # Load the COCO classes
     classes = loadCOCOclasses("mscoco_labels.names")
@@ -223,8 +235,10 @@ if __name__ == "__main__":
         boxes = net.forward()                                                       # SSD Mobilenet
 
         # Find the bounding box and mask for any selected and present objects
-        # found = detectObjectsInFrame(frame, classes, detect_classes, boxes, masks, threshold)    # Mask RCNN
-        found = detectObjectsInFrame(frame, classes, detect_classes, boxes, threshold, showlabels) # SSD Mobilenet
+        # found = detectObjectsInFrame(frame, classes, detect_classes, 
+        #                               boxes, masks, threshold, blur)      # Mask RCNN
+        found = detectObjectsInFrame(frame, classes, detect_classes, 
+                                        boxes, threshold, showlabels, blur) # SSD Mobilenet
 
         # Output our inference performance at the top of the frame
         t, _ = net.getPerfProfile()
