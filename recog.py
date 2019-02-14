@@ -1,11 +1,11 @@
 # -------------------------------------------------
-# CNN-based Object Detector
+# CNN-based Object Recogniser
 # 
 # With thanks to Satya Mallick & Sunita Nayak
 # https://github.com/spmallick/learnopencv/tree/master/Mask-RCNN
 # https://www.learnopencv.com/deep-learning-based-object-detection-and-instance-segmentation-using-mask-r-cnn-in-opencv-python-c/
 #
-# Nick Hall : cloudwise.co : 2019
+# Nick Hall : cloudwise consulting : © cloudwise.co 2019
 # -------------------------------------------------
 
 import sys
@@ -45,7 +45,7 @@ MODEL_PATH = "./ssd_mobilenet_v2_coco_2018_03_29/"
 TEXT_GRAPH = "./ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
 MODEL_WEIGHTS = MODEL_PATH + "frozen_inference_graph.pb"
 DEFAULT_OUTPUT_PATH = './out'
-WIN_NAME = 'CNN Object Detect'
+WIN_NAME = 'recog : cloudwise.co : '
 NO_FRAME_SLEEP = (30 * 1)
 
 # -------------------------------------------------
@@ -106,7 +106,7 @@ def detectObjectsInFrame(frame, classes, detect_classes, boxes, threshold, showl
 
 # Parse arguments
 def getArguments():
-    parser = argparse.ArgumentParser(description='Use this script to run the CNN-based object detector')
+    parser = argparse.ArgumentParser(description='Use this script to run the object recogniser')
     parser.add_argument('--video', help='path to video file')
     parser.add_argument('--stream', help='path to video stream')
     parser.add_argument('--out', help='path to output directory')
@@ -116,7 +116,7 @@ def getArguments():
     parser.add_argument('--classes', help='[comma-delimited] list of COCO object classes', type=str)
     args = parser.parse_args()
 
-    _outpath = DEFAULT_OUTPUT_PATH
+    _outpath = None
     _headless = False
     _showlabels = False
     _threshold = DEFAULT_THRESHOLD
@@ -225,11 +225,11 @@ if __name__ == "__main__":
 
         # Output our inference performance at the top of the frame
         t, _ = net.getPerfProfile()
-        label = WIN_NAME + ' time/frame : %0.0f ms' % abs(t * 1000.0 / cv.getTickFrequency())
+        label = WIN_NAME + ' time/frame = %0.0f ms' % abs(t * 1000.0 / cv.getTickFrequency())
         cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
         # Write the frame with the detection boxes to disk
-        if found > 0:
+        if found > 0 and outpath:
             outputFile = outpath + '/' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.jpg'
             cv.imwrite(outputFile, frame.astype(np.uint8))
 
