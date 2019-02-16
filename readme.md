@@ -54,13 +54,24 @@ https://videos.pexels.com/videos/time-lapse-video-of-runners-855789
 ##### Headless OpenCV install on AWS Linux:
 
 `sudo yum update`
+
 `sudo yum install git cmake gcc-c++ cmake3`
+
 `git clone https://github.com/Itseez/opencv.git`
+
 `cd opencv`
+
 `mkdir ./build`
+
 `git checkout`
+
 `cd ./build`
+
 `cmake3 ../`
+
 `sudo yum install numpy python-devel pip`
+
 `sudo pip install opencv-python`
+
 `pip install opencv-python-headless --user`
+
