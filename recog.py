@@ -57,7 +57,7 @@ YOLO3_TEXT_GRAPH = "./yolov3.cfg"
 YOLO3_MODEL_WEIGHTS = "./yolov3.weights"
 
 DEFAULT_OUTPUT_PATH = './out'
-WIN_NAME = 'recog : cloudwise.co : '
+APP_NAME = 'recog : cloudwise.co : '
 
 NO_FRAME_SLEEP      = (30 * 1)
 
@@ -68,7 +68,7 @@ CV_BOUNDING_COLOR   = (255, 178, 50)
 
 # For each frame, draw a bounding box with optional label & blur for each detected-and-selected object:
 # > SSD version
-def detectTFObjectsInFrame(frame, classes, detect_classes, predictions, threshold, showlabels, blur):
+def detect_TF_objects_in_frame(frame, classes, detect_classes, predictions, threshold, showlabels):
     # Output size of masks is NxCxHxW where
     # N - number of detected boxes
     # C - number of classes (excluding background)
@@ -105,19 +105,15 @@ def detectTFObjectsInFrame(frame, classes, detect_classes, predictions, threshol
             bottom = max(0, min(bottom, frameH - 1))
 
             # Draw bounding box on the image
-            cv.rectangle(frame, (left, top), (right, bottom), CV_BOUNDING_COLOR, 1)
-
-            # Blur the bounding box for privacy?
-            if blur:
-                blurRegion(frame, top, bottom, left, right)              
+            cv.rectangle(frame, (left, top), (right, bottom), CV_BOUNDING_COLOR, 1)            
 
             # Show the object info?
             if showlabels:
-                showLabels(frame, top, left, class_id, classes, score)
+                show_labels(frame, top, left, class_id, classes, score)
     return _found
 
 # > YOLO v3 version
-def detectYOLO3ObjectsInFrame(frame, classes, detect_classes, predictions, threshold, showlabels, blur):
+def detect_YOLO3_objects_in_frame(frame, classes, detect_classes, predictions, threshold, showlabels):
     _found = 0
     class_ids = []
     confidences = []
@@ -167,28 +163,24 @@ def detectYOLO3ObjectsInFrame(frame, classes, detect_classes, predictions, thres
         top = int(round(y))
         right = int(round(x + w))
         bottom = int(round(y + h))
-        cv.rectangle(frame, (left, top), (right, bottom), CV_BOUNDING_COLOR, 1)
-
-        # Blur the bounding box for privacy?
-        if blur:
-            blurRegion(frame, top, bottom, left, right)              
+        cv.rectangle(frame, (left, top), (right, bottom), CV_BOUNDING_COLOR, 1)             
 
         # Show the object info?
         if showlabels:
-            showLabels(frame, top, left, class_ids[i], classes, confidences[i])
+            show_labels(frame, top, left, class_ids[i], classes, confidences[i])
     return _found
 
 # Blur object regions for obfuscation
-def blurRegion(frame, top, bottom, left, right):
-    blur_region = frame[top:bottom, left:right]
+def blur_region(frame, top, bottom, left, right):
+    region = frame[top:bottom, left:right]
     # apply a gaussian blur on the bounding region
-    blur_region = cv.GaussianBlur(blur_region, (23, 23), 30)
+    region = cv.GaussianBlur(region, (23, 23), 30)
     # merge this blurry rectangle into the frame
-    frame[top:top + blur_region.shape[0], left:left + blur_region.shape[1]] = blur_region
+    frame[top:top + region.shape[0], left:left + region.shape[1]] = region
     return frame           
 
 # Overlay object labels
-def showLabels(frame, top, left, class_id, classes, score):
+def show_labels(frame, top, left, class_id, classes, score):
     # create the object label
     assert(class_id < len(classes))
     label = '%s:%.2f' % (classes[class_id], score)
@@ -202,7 +194,7 @@ def showLabels(frame, top, left, class_id, classes, score):
     return frame           
 
 # Parse arguments
-def getArguments():
+def get_arguments():
     parser = argparse.ArgumentParser(description='Use this script to run the object recogniser')
     parser.add_argument('--video', help='path to video file')
     parser.add_argument('--stream', help='path to video stream')
@@ -286,7 +278,7 @@ def getArguments():
     return _capture, _outpath, _headless, _showlabels, _threshold, _detect_classes, _blur, _model
 
 # COCO classes loader
-def loadCOCOclasses(classes_file_path):
+def load_COCO_classes(classes_file_path):
     # Load names of COCO classes
     _classes = None
     with open(classes_file_path, 'rt') as f:
@@ -294,14 +286,14 @@ def loadCOCOclasses(classes_file_path):
     return _classes
 
 # YOLO v3 classes loader
-def loadYOLO3classes(classes_file_path):
+def load_YOLO3_classes(classes_file_path):
     classes = None
     with open(classes_file_path, 'r') as f:
         classes = [line.strip() for line in f.readlines()]
     return classes
 
 # TF net loader
-def loadTFnet(model_weights, text_graph):
+def load_TF_net(model_weights, text_graph):
     # Load the network
     _net = cv.dnn.readNetFromTensorflow(model_weights, text_graph)
     _net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
@@ -309,19 +301,19 @@ def loadTFnet(model_weights, text_graph):
     return _net
 
 # YOLO v3 net loader
-def loadYOLO3net(weights, config):
+def load_YOLO3_net(weights, config):
     # Load the network
     net = cv.dnn.readNet(weights, config)
     return net
 
 # YOLO v3 output layer retrieval
-def getYOLO3outputLayers(net):
+def get_YOLO3_output_layers(net):
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
     return output_layers
 
 # Get the TF candidate object boxes
-def getTFobjects(region, net, net_params):
+def get_TF_objects(region, net, net_params):
     # Create a 4D blob from the region
     # blob = cv.dnn.blobFromImage(cv.resize(region, (300,300)), 1.0, (300, 300), swapRB=True, crop=False)
     blob = cv.dnn.blobFromImage(region, swapRB=True, crop=False)
@@ -330,7 +322,7 @@ def getTFobjects(region, net, net_params):
     return net.forward(net_params)
 
 # Get the YOLO v3 candidate object boxes
-def getYOLO3objects(region, net, net_params):
+def get_YOLO3_objects(region, net, net_params):
     scale = 0.00392
     # Create a 4D blob from the region
     # blob = cv.dnn.blobFromImage(region, scale, (416, 416), (0,0,0), True, crop=False)
@@ -347,11 +339,11 @@ if __name__ == "__main__":
 
     # Load the relevant classes and model
     if model == YOLO3_MODEL:
-        classes = loadYOLO3classes("yolov3.classes")
-        net = loadYOLO3net(YOLO3_MODEL_WEIGHTS, YOLO3_TEXT_GRAPH)
+        classes = load_YOLO3_classes("yolov3.classes")
+        net = load_YOLO3_net(YOLO3_MODEL_WEIGHTS, YOLO3_TEXT_GRAPH)
     else:
-        classes = loadCOCOclasses("mscoco_labels.names")
-        net = loadTFnet(SSD_MODEL_WEIGHTS, SSD_TEXT_GRAPH)
+        classes = load_COCO_classes("mscoco_labels.names")
+        net = load_TF_net(SSD_MODEL_WEIGHTS, SSD_TEXT_GRAPH)
 
     # Set the output window name (assuming there is a GUI output path)
     if not headless:
@@ -362,6 +354,7 @@ if __name__ == "__main__":
     while True:
         # Get a frame from the video/image/stream
         hasFrame, frame = capture.read()
+        height, width = frame.shape[:2]
         
         # Skip and sleep if there is no frame
         if not hasFrame:
@@ -369,22 +362,25 @@ if __name__ == "__main__":
             time.sleep(NO_FRAME_SLEEP)
             continue
 
+        # Blur the frame for privacy?
+        if blur:
+            frame = cv.GaussianBlur(frame, (23, 23), 30)
+
         # Get the object predictions and annotate the frame
         if model == YOLO3_MODEL:
-            predictions = getYOLO3objects(frame, net, getYOLO3outputLayers(net))
-            found = detectYOLO3ObjectsInFrame(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
+            predictions = get_YOLO3_objects(frame, net, get_YOLO3_output_layers(net))
+            found = detect_YOLO3_objects_in_frame(frame, classes, detect_classes, predictions, threshold, showlabels)
         else:
             # TF Mask RCNN  > predictions, masks = getTFobjects(frame, net, ['detection_out_final', 'detection_masks'])
-            predictions = getTFobjects(frame, net, None)
-            found = detectTFObjectsInFrame(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
+            predictions = get_TF_objects(frame, net, None)
+            found = detect_TF_objects_in_frame(frame, classes, detect_classes, predictions, threshold, showlabels)
 
         # Watermark the frame
         timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         t, _ = net.getPerfProfile()
         performance = ' : inference=%0.0f ms' % abs(t * 1000.0 / cv.getTickFrequency())
-        height, width = frame.shape[:2]
         modelused = ' : ' + model + '@' + str(width) + 'x' + str(height)
-        label = WIN_NAME + timestamp + performance + modelused
+        label = APP_NAME + timestamp + performance + modelused
         cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, CV_TEXT_SIZE, (0, 0, 0), 1)
 
         # Write the frame to output directory
@@ -394,7 +390,7 @@ if __name__ == "__main__":
 
         # Display the frame to X if there is a GUI path
         if not headless:
-            cv.imshow(WIN_NAME, frame)
+            cv.imshow(label, frame)
         
         # Esc to quit
         if not headless and cv.waitKey(1) == 27: 
