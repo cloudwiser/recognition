@@ -378,7 +378,7 @@ if __name__ == "__main__":
         # Watermark the frame
         timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         t, _ = net.getPerfProfile()
-        performance = ' : inference=%0.0f ms' % abs(t * 1000.0 / cv.getTickFrequency())
+        performance = ' : infer=%0.0fms' % abs(t * 1000.0 / cv.getTickFrequency())
         modelused = ' : ' + model + '@' + str(width) + 'x' + str(height)
         label = APP_NAME + timestamp + performance + modelused
         cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, CV_TEXT_SIZE, (0, 0, 0), 1)
