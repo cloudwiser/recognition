@@ -5,25 +5,25 @@
 https://github.com/opencv/opencv/wiki/TensorFlow-Object-Detection-API
 https://github.com/opencv/opencv_extra/tree/master/testdata/dnn
 
-##### Installation on Linux: (Mask RCNN)
+##### Installation on Linux: (Mask RCNN example)
 
 `wget http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz`
 
 `tar zxvf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz`
 
-##### Install on MacOS: (Mask RCNN)
+##### Install on MacOS: (Mask RCNN example)
 
 `curl -O http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz`
 
 `tar zxvf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz`
 
-##### OpenCV installtion:
+##### OpenCV installation:
 
-Install 4.0.0 - not using versions before 3.4.3 will throw CNN moddel exceptions given they are not supported:
+Install 4.0.0 - using versions before 3.4.3 will throw CNN moddel exceptions given this functionality was not supported:
 
 `pip install opencv-python`
 
-If you are running without the need or access to an X server, there is the lightweight headless python package which can be installed:
+If you are running without the need or access to an X server, there is the (lighter-weight) headless python package which can be installed:
 
 `pip install opencv-python-headless`
 
@@ -37,19 +37,19 @@ python tf_text_graph_faster_rcnn.py --input /path/to/model.pb --config /path/to/
 
 ##### Usage examples:
 
-`python3 person_detect.py --video=people.mpg`
+`python3 recog.py --video=people.mpg`
 
-`python3 person_detect.py --stream='http://192.168.0.1/video.cgi'`
+`python3 recog.py --stream='http://192.168.0.1/video.cgi'`
 
-`python3 person_detect.py`  
+`python3 recog.py`  
 (uses your local webcam as video source)
 
-##### Licence-free video clips for testing:
+##### Licence-free video clips for testing and paramter-tuning:
 
 https://videos.pexels.com/videos/time-lapse-video-of-runners-855789
 
 
-##### Headless OpenCV install on AWS Linux
+##### Headless OpenCV install on AWS Linux:
 
 'sudo yum update'
 'sudo yum install git cmake gcc-c++ cmake3'
