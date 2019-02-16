@@ -31,7 +31,9 @@ If you are running without the need or access to an X server, there is the (ligh
 
 The pbtxt file for the associated CNN model architecture should be on the tf or opencv GitHub - see Useful References above - but, if not, can be generated thus:
 
-python tf_text_graph_faster_rcnn.py --input /path/to/model.pb --config /path/to/example.config --output /path/to/graph.pbtxt
+`python tf_text_graph_faster_rcnn.py --input /path/to/model.pb --config /path/to/example.config --output /path/to/graph.pbtxt`
+
+Example:
 
 `python tf_text_graph_ssd.py --input ./ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb --config ./ssd_mobilenet_v2_coco.config --output ./ssd_mobilenet_v2_coco_2019_01_28.pbtxt`
 
@@ -51,14 +53,14 @@ https://videos.pexels.com/videos/time-lapse-video-of-runners-855789
 
 ##### Headless OpenCV install on AWS Linux:
 
-'sudo yum update'
-'sudo yum install git cmake gcc-c++ cmake3'
-'git clone https://github.com/Itseez/opencv.git'
-'cd opencv'
-'mkdir ./build'
-'git checkout'
-'cd ./build'
-'cmake3 ../'
-'sudo yum install numpy python-devel pip'
-'sudo pip install opencv-python'
-'pip install opencv-python-headless --user'
+`sudo yum update`
+`sudo yum install git cmake gcc-c++ cmake3`
+`git clone https://github.com/Itseez/opencv.git`
+`cd opencv`
+`mkdir ./build`
+`git checkout`
+`cd ./build`
+`cmake3 ../`
+`sudo yum install numpy python-devel pip`
+`sudo pip install opencv-python`
+`pip install opencv-python-headless --user`
