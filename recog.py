@@ -66,7 +66,8 @@ CV_BOUNDING_COLOR   = (255, 178, 50)
 
 # -------------------------------------------------
 
-# For each frame, draw a bounding box for each detected object
+# For each frame, draw a bounding box with optional label & blur for each detected-and-selected object:
+# > SSD version
 def detectTFObjectsInFrame(frame, classes, detect_classes, predictions, threshold, showlabels, blur):
     # Output size of masks is NxCxHxW where
     # N - number of detected boxes
@@ -115,7 +116,7 @@ def detectTFObjectsInFrame(frame, classes, detect_classes, predictions, threshol
                 showLabels(frame, top, left, class_id, classes, score)
     return _found
 
-
+# > YOLO v3 version
 def detectYOLO3ObjectsInFrame(frame, classes, detect_classes, predictions, threshold, showlabels, blur):
     _found = 0
     class_ids = []
