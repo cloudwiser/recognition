@@ -1,9 +1,11 @@
 # -------------------------------------------------
-# CNN-based Object Recogniser
+# OpenCV DNN-based Object Recogniser
 # 
 # With thanks to Satya Mallick & Sunita Nayak
 # https://github.com/spmallick/learnopencv/tree/master/Mask-RCNN
 # https://www.learnopencv.com/deep-learning-based-object-detection-and-instance-segmentation-using-mask-r-cnn-in-opencv-python-c/
+#
+# Also see https://github.com/opencv/opencv/tree/master/samples/dnn
 #
 # Nick Hall : cloudwise.co
 # 
@@ -37,8 +39,9 @@ COCO_classes = ["background", "person", "bicycle", "car", "motorcycle",
     "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "unknown",
     "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" ]
 
-DEFAULT_SSD_THRESHOLD   = 0.75            # SSD confidence threshold - was 0.3
-DEFAULT_YOLO3_THRESHOLD = 0.5             # YOLO confidence threshold
+DEFAULT_SSD_THRESHOLD           = 0.75  # SSD confidence threshold - was 0.3
+DEFAULT_YOLO3_THRESHOLD         = 0.5   # YOLO v3 confidence threshold
+DEFAULT_FASTER_RCNN_THRESHOLD   = 0.75  # Faster RCNN confidence threshold
 
 DEFAULT_COCO_CLASS    = {1}             # Person from the COCO set   
 DEFAULT_YOLO3_CLASS   = {0}             # Person from the YOLOv3 set   
@@ -46,15 +49,21 @@ DEFAULT_NMS_THRESHOLD = 0.4
 
 SSD_MODEL   = "ssd"
 YOLO3_MODEL = "yolo3"
+FASTER_RCNN_MODEL = "fasterrcnn"
+# MASK_RCNN_MODEL = "maskrcnn"
 
-# MODEL_PATH = "./mask_rcnn_inception_v2_coco_2018_01_28/"
-# TEXT_GRAPH = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
+# MASK_RCNN_MODEL_PATH = "./mask_rcnn_inception_v2_coco_2018_01_28/"
+# MASK_RCNN_TEXT_GRAPH = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
 SSD_MODEL_PATH = "./ssd_mobilenet_v2_coco_2018_03_29/"
 SSD_TEXT_GRAPH = "./ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
 SSD_MODEL_WEIGHTS = SSD_MODEL_PATH + "frozen_inference_graph.pb"
 
 YOLO3_TEXT_GRAPH = "./yolov3.cfg"
 YOLO3_MODEL_WEIGHTS = "./yolov3.weights"
+
+FASTER_RCNN_MODEL_PATH = "./faster_rcnn_resnet50_coco_2018_01_28/"
+FASTER_RCNN_TEXT_GRAPH = "./faster_rcnn_resnet50_coco_2018_01_28.pbtxt"
+FASTER_RCNN_MODEL_WEIGHTS = FASTER_RCNN_MODEL_PATH + "frozen_inference_graph.pb"
 
 DEFAULT_OUTPUT_PATH = './out'
 APP_NAME = 'recog : cloudwise.co : '
@@ -67,18 +76,17 @@ CV_BOUNDING_COLOR   = (255, 178, 50)
 # -------------------------------------------------
 
 # For each frame, draw a bounding box with optional label & blur for each detected-and-selected object:
-# > SSD version
-def detect_TF_objects_in_frame(frame, classes, detect_classes, predictions, threshold, showlabels):
-    # Output size of masks is NxCxHxW where
-    # N - number of detected boxes
-    # C - number of classes (excluding background)
-    # HxW - segmentation shape
-    
+# > SSD & Faster CNN ?!
+def objects_from_single_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur):
     _found = 0
     # num_classes = masks.shape[1]
     num_detections = predictions.shape[2]
     frameH = frame.shape[0]
     frameW = frame.shape[1]
+
+    # Obfuscate the frame for privacy?
+    if blur:
+        cv.GaussianBlur(frame, (23, 23), 30)
 
     for i in range(num_detections):
         box = predictions[0, 0, i]
@@ -112,14 +120,18 @@ def detect_TF_objects_in_frame(frame, classes, detect_classes, predictions, thre
                 show_labels(frame, top, left, class_id, classes, score)
     return _found
 
-# > YOLO v3 version
-def detect_YOLO3_objects_in_frame(frame, classes, detect_classes, predictions, threshold, showlabels):
+# > YOLO v3 
+def objects_from_multi_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur):
     _found = 0
     class_ids = []
     confidences = []
     boxes = []
     width = frame.shape[1]
     height = frame.shape[0]
+
+    # Obfuscate the frame for privacy?
+    if blur:
+        cv.GaussianBlur(frame, (23, 23), 30)
 
     # For YOLO v3, we have multiple output layers as opposed to the single layer in most CNN's...
     for out in predictions:
@@ -231,9 +243,11 @@ def get_arguments():
     if (args.threshold):
         _threshold = float(args.threshold)
     elif _model == YOLO3_MODEL:
-        _detect_classes = DEFAULT_YOLO3_THRESHOLD
+        _threshold = DEFAULT_YOLO3_THRESHOLD
+    elif _model == FASTER_RCNN_MODEL:
+        _threshold = DEFAULT_FASTER_RCNN_THRESHOLD
     else:
-        _detect_classes = DEFAULT_SSD_THRESHOLD
+        _threshold = DEFAULT_SSD_THRESHOLD
 
     if (args.classes):
         _detect_classes = [int(item) for item in args.classes.split(',')]
@@ -303,20 +317,19 @@ def load_TF_net(model_weights, text_graph):
 # YOLO v3 net loader
 def load_YOLO3_net(weights, config):
     # Load the network
-    net = cv.dnn.readNet(weights, config)
-    return net
+    return cv.dnn.readNet(weights, config)
 
 # YOLO v3 output layer retrieval
 def get_YOLO3_output_layers(net):
     layer_names = net.getLayerNames()
-    output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-    return output_layers
+    return [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
-# Get the TF candidate object boxes
-def get_TF_objects(region, net, net_params):
+# Get the SSD MobileNet candidate object boxes
+def get_SSD_objects(region, net, net_params):
+    scale = 0.00784
     # Create a 4D blob from the region
-    # blob = cv.dnn.blobFromImage(cv.resize(region, (300,300)), 1.0, (300, 300), swapRB=True, crop=False)
-    blob = cv.dnn.blobFromImage(region, swapRB=True, crop=False)
+    # blob = cv.dnn.blobFromImage(region, swapRB=True, crop=False)
+    blob = cv.dnn.blobFromImage(region, scale, (300, 300), (127.5, 127.5, 127.5), swapRB=True, crop=False)    
     net.setInput(blob)
     # Run the forward pass to get object boxes from the output layers
     return net.forward(net_params)
@@ -325,8 +338,17 @@ def get_TF_objects(region, net, net_params):
 def get_YOLO3_objects(region, net, net_params):
     scale = 0.00392
     # Create a 4D blob from the region
-    # blob = cv.dnn.blobFromImage(region, scale, (416, 416), (0,0,0), True, crop=False)
-    blob = cv.dnn.blobFromImage(region, scale, (544, 544), (0,0,0), True, crop=False)
+    blob = cv.dnn.blobFromImage(region, scale, (416, 416), (0,0,0), swapRB=False, crop=False)
+    # blob = cv.dnn.blobFromImage(region, scale, (544, 544), (0,0,0), True, crop=False)
+    net.setInput(blob)
+    # Run the forward pass to get object boxes from the output layers
+    return net.forward(net_params)
+
+# Get the Faster RCNN ResNet50 candidate object boxes
+def get_Faster_RCNN_objects(region, net, net_params):
+    scale = 1.0
+    # Create a 4D blob from the region
+    blob = cv.dnn.blobFromImage(region, scale, (300, 300), (103.939, 116.779, 123.68), swapRB=False, crop=False)    
     net.setInput(blob)
     # Run the forward pass to get object boxes from the output layers
     return net.forward(net_params)
@@ -337,17 +359,20 @@ if __name__ == "__main__":
     # Extract the video source and output directory for annotated images
     capture, outpath, headless, showlabels, threshold, detect_classes, blur, model = getArguments()
 
-    # Load the relevant classes and model
+    # Load the relevant classes and model - default to SSD MobileNet
     if model == YOLO3_MODEL:
         classes = load_YOLO3_classes("yolov3.classes")
         net = load_YOLO3_net(YOLO3_MODEL_WEIGHTS, YOLO3_TEXT_GRAPH)
+    elif model == FASTER_RCNN_MODEL:
+        classes = load_COCO_classes("mscoco_labels.names")
+        net = load_TF_net(FASTER_RCNN_MODEL_WEIGHTS, FASTER_RCNN_TEXT_GRAPH)
     else:
         classes = load_COCO_classes("mscoco_labels.names")
         net = load_TF_net(SSD_MODEL_WEIGHTS, SSD_TEXT_GRAPH)
 
     # Set the output window name (assuming there is a GUI output path)
     if not headless:
-        cv.namedWindow(WIN_NAME, cv.WINDOW_NORMAL)
+        cv.namedWindow(APP_NAME, cv.WINDOW_NORMAL)
 
     # Frame processing loop
     print("INFO: starting frame processing...")
@@ -362,18 +387,18 @@ if __name__ == "__main__":
             time.sleep(NO_FRAME_SLEEP)
             continue
 
-        # Blur the frame for privacy?
-        if blur:
-            frame = cv.GaussianBlur(frame, (23, 23), 30)
-
-        # Get the object predictions and annotate the frame
+        # Get the object predictions and annotate the frame - default to SSD MobileNet
         if model == YOLO3_MODEL:
             predictions = get_YOLO3_objects(frame, net, get_YOLO3_output_layers(net))
-            found = detect_YOLO3_objects_in_frame(frame, classes, detect_classes, predictions, threshold, showlabels)
+            found = objects_from_multi_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
+        # elif model == MASK_RCNN_MODEL:
+        #   predictions, masks = get_mask_RCNN_objects(frame, net, ['detection_out_final', 'detection_masks'])
+        elif model == FASTER_RCNN_MODEL:
+            predictions = get_Faster_RCNN_objects(frame, net, None)
+            found = objects_from_single_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
         else:
-            # TF Mask RCNN  > predictions, masks = getTFobjects(frame, net, ['detection_out_final', 'detection_masks'])
-            predictions = get_TF_objects(frame, net, None)
-            found = detect_TF_objects_in_frame(frame, classes, detect_classes, predictions, threshold, showlabels)
+            predictions = get_SSD_objects(frame, net, None)
+            found = objects_from_single_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
 
         # Watermark the frame
         timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -390,7 +415,7 @@ if __name__ == "__main__":
 
         # Display the frame to X if there is a GUI path
         if not headless:
-            cv.imshow(label, frame)
+            cv.imshow(APP_NAME, frame)
         
         # Esc to quit
         if not headless and cv.waitKey(1) == 27: 
