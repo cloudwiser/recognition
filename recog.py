@@ -329,10 +329,11 @@ def get_YOLO3_output_layers(net):
 
 # Get the SSD MobileNet candidate object boxes
 def get_SSD_objects(region, net, net_params):
-    scale = 0.00784
+    scale = 0.007843
+    region_resized = cv2.resize(region,(300,300)) # resize frame for prediction
     # Create a 4D blob from the region
-    blob = cv.dnn.blobFromImage(region, swapRB=True, crop=False)
-    # blob = cv.dnn.blobFromImage(region, scale, size=(300, 300), (127.5, 127.5, 127.5), swapRB=True, crop=False)    
+    # blob = cv.dnn.blobFromImage(region, swapRB=True, crop=False)
+    blob = cv.dnn.blobFromImage(region_resized, scale, size=(300, 300), (127.5, 127.5, 127.5), False)    
     net.setInput(blob)
     # Run the forward pass to get object boxes from the output layers
     return net.forward(net_params)
