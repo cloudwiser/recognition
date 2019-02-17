@@ -382,13 +382,14 @@ if __name__ == "__main__":
     while True:
         # Get a frame from the video/image/stream
         hasFrame, frame = capture.read()
-        height, width = frame.shape[:2]
         
         # Skip and sleep if there is no frame
         if not hasFrame:
             print("WARN: no frame...sleep for {} sec(s)".format(NO_FRAME_SLEEP))
             time.sleep(NO_FRAME_SLEEP)
             continue
+        else:
+            height, width = frame.shape[:2]
 
         # Get the object predictions and annotate the frame - default to SSD MobileNet
         if model == YOLO3_MODEL:
