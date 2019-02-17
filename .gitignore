@@ -14,3 +14,4 @@ faster_rcnn_resnet50_coco_2018_01_28/model.ckpt.data-00000-of-00001
 faster_rcnn_resnet50_coco_2018_01_28/frozen_inference_graph.pb
 faster_rcnn_resnet50_coco_2018_01_28.pbtxt
 faster_rcnn_resnet50_coco_2018_01_28/checkpoint
+*.jpg

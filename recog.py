@@ -39,7 +39,7 @@ COCO_classes = ["background", "person", "bicycle", "car", "motorcycle",
     "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "unknown",
     "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" ]
 
-DEFAULT_SSD_THRESHOLD           = 0.77  # SSD confidence threshold - was 0.3
+DEFAULT_SSD_THRESHOLD           = 0.8   # SSD confidence threshold - was 0.3
 DEFAULT_YOLO3_THRESHOLD         = 0.5   # YOLO v3 confidence threshold
 DEFAULT_FASTER_RCNN_THRESHOLD   = 0.4   # Faster RCNN confidence threshold
 
@@ -94,7 +94,7 @@ def objects_from_single_layer_output(frame, classes, detect_classes, predictions
         if score > threshold:
             class_id = int(detection[1])
 
-            print("DEBUG: score={}, class={}".format(score, class_id))
+            # print("DEBUG: score={}, class={}".format(score, class_id))
 
             # Is this class one that we are interested in?
             if class_id not in detect_classes:
@@ -144,7 +144,7 @@ def objects_from_multi_layer_output(frame, classes, detect_classes, predictions,
             
             if score > threshold:
                 
-                print("DEBUG: score={}, class={}".format(score, class_id))
+                # print("DEBUG: score={}, class={}".format(score, class_id))
 
                 # Is this class one that we are interested in?
                 if class_id not in detect_classes:
