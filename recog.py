@@ -39,9 +39,9 @@ COCO_classes = ["background", "person", "bicycle", "car", "motorcycle",
     "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "unknown",
     "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" ]
 
-DEFAULT_SSD_THRESHOLD           = 0.75  # SSD confidence threshold - was 0.3
+DEFAULT_SSD_THRESHOLD           = 0.77  # SSD confidence threshold - was 0.3
 DEFAULT_YOLO3_THRESHOLD         = 0.5   # YOLO v3 confidence threshold
-DEFAULT_FASTER_RCNN_THRESHOLD   = 0.75  # Faster RCNN confidence threshold
+DEFAULT_FASTER_RCNN_THRESHOLD   = 0.4   # Faster RCNN confidence threshold
 
 DEFAULT_COCO_CLASS    = {1}             # Person from the COCO set   
 DEFAULT_YOLO3_CLASS   = {0}             # Person from the YOLOv3 set   
@@ -76,11 +76,11 @@ CV_BOUNDING_COLOR   = (255, 178, 50)
 # -------------------------------------------------
 
 # For each frame, draw a bounding box with optional label & blur for each detected-and-selected object:
-# > SSD & Faster CNN ?!
+# > SSD & Faster CNN
 def objects_from_single_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur):
     _found = 0
     # num_classes = masks.shape[1]
-    num_detections = predictions.shape[2]
+    # num_detections = predictions.shape[2]
     frameH = frame.shape[0]
     frameW = frame.shape[1]
 
@@ -88,12 +88,13 @@ def objects_from_single_layer_output(frame, classes, detect_classes, predictions
     if blur:
         cv.GaussianBlur(frame, (23, 23), 30)
 
-    for i in range(num_detections):
-        box = predictions[0, 0, i]
-        score = box[2]
+    for detection in predictions[0, 0, :, :]:
+        score = detection[2]
         # Is this object confidence above the threshold
         if score > threshold:
-            class_id = int(box[1])
+            class_id = int(detection[1])
+
+            print("DEBUG: score={}, class={}".format(score, class_id))
 
             # Is this class one that we are interested in?
             if class_id not in detect_classes:
@@ -102,10 +103,10 @@ def objects_from_single_layer_output(frame, classes, detect_classes, predictions
                 _found += 1
 
             # Extract the bounding box
-            left = int(frameW * box[3])
-            top = int(frameH * box[4])
-            right = int(frameW * box[5])
-            bottom = int(frameH * box[6])
+            left = int(frameW * detection[3])
+            top = int(frameH * detection[4])
+            right = int(frameW * detection[5])
+            bottom = int(frameH * detection[6])
             
             left = max(0, min(left, frameW - 1))
             top = max(0, min(top, frameH - 1))
@@ -133,7 +134,7 @@ def objects_from_multi_layer_output(frame, classes, detect_classes, predictions,
     if blur:
         cv.GaussianBlur(frame, (23, 23), 30)
 
-    # For YOLO v3, we have multiple output layers as opposed to the single layer in most CNN's...
+    # For YOLO v3, we have multiple output layers as opposed to the single layer in SSD et al...
     for out in predictions:
         # For each detection found in the layer
         for detection in out:
@@ -142,6 +143,8 @@ def objects_from_multi_layer_output(frame, classes, detect_classes, predictions,
             score = scores[class_id]
             
             if score > threshold:
+                
+                print("DEBUG: score={}, class={}".format(score, class_id))
 
                 # Is this class one that we are interested in?
                 if class_id not in detect_classes:
@@ -328,8 +331,8 @@ def get_YOLO3_output_layers(net):
 def get_SSD_objects(region, net, net_params):
     scale = 0.00784
     # Create a 4D blob from the region
-    # blob = cv.dnn.blobFromImage(region, swapRB=True, crop=False)
-    blob = cv.dnn.blobFromImage(region, scale, (300, 300), (127.5, 127.5, 127.5), swapRB=True, crop=False)    
+    blob = cv.dnn.blobFromImage(region, swapRB=True, crop=False)
+    # blob = cv.dnn.blobFromImage(region, scale, size=(300, 300), (127.5, 127.5, 127.5), swapRB=True, crop=False)    
     net.setInput(blob)
     # Run the forward pass to get object boxes from the output layers
     return net.forward(net_params)
@@ -338,17 +341,17 @@ def get_SSD_objects(region, net, net_params):
 def get_YOLO3_objects(region, net, net_params):
     scale = 0.00392
     # Create a 4D blob from the region
-    blob = cv.dnn.blobFromImage(region, scale, (416, 416), (0,0,0), swapRB=False, crop=False)
-    # blob = cv.dnn.blobFromImage(region, scale, (544, 544), (0,0,0), True, crop=False)
+    # blob = cv.dnn.blobFromImage(region, scale, size=(416, 416), mean=(0,0,0), swapRB=False, crop=False)
+    blob = cv.dnn.blobFromImage(region, scale, size=(544, 544), mean=(0,0,0), swapRB=True, crop=False)
     net.setInput(blob)
     # Run the forward pass to get object boxes from the output layers
     return net.forward(net_params)
 
 # Get the Faster RCNN ResNet50 candidate object boxes
 def get_Faster_RCNN_objects(region, net, net_params):
-    scale = 1.0
     # Create a 4D blob from the region
-    blob = cv.dnn.blobFromImage(region, scale, (300, 300), (103.939, 116.779, 123.68), swapRB=False, crop=False)    
+    blob = cv.dnn.blobFromImage(region, size=(300, 300), swapRB=True, crop=False)
+    # blob = cv.dnn.blobFromImage(region, size=(300, 300), mean=(103.939, 116.779, 123.68), swapRB=False, crop=False)    
     net.setInput(blob)
     # Run the forward pass to get object boxes from the output layers
     return net.forward(net_params)
@@ -357,7 +360,7 @@ def get_Faster_RCNN_objects(region, net, net_params):
 
 if __name__ == "__main__":
     # Extract the video source and output directory for annotated images
-    capture, outpath, headless, showlabels, threshold, detect_classes, blur, model = getArguments()
+    capture, outpath, headless, showlabels, threshold, detect_classes, blur, model = get_arguments()
 
     # Load the relevant classes and model - default to SSD MobileNet
     if model == YOLO3_MODEL:
