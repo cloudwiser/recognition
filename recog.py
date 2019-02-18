@@ -16,7 +16,8 @@ import sys
 import cv2 as cv
 import argparse
 import numpy as np
-import os.path
+from os import mkdir
+from os.path import isfile, exists
 import datetime
 import time
 if sys.version_info.major == 3:
@@ -68,7 +69,7 @@ FASTER_RCNN_MODEL_WEIGHTS = FASTER_RCNN_MODEL_PATH + "frozen_inference_graph.pb"
 DEFAULT_OUTPUT_PATH = './out'
 APP_NAME = 'recog : cloudwise.co : '
 
-NO_FRAME_SLEEP      = (30 * 1)
+NO_FRAME_WAIT      = (10)
 
 CV_TEXT_SIZE        = 0.5
 CV_BOUNDING_COLOR   = (255, 178, 50)
@@ -220,6 +221,7 @@ def get_arguments():
     parser.add_argument('--threshold', help='set the detection threshold', type=float, default=DEFAULT_SSD_THRESHOLD)
     parser.add_argument('--classes', help='[comma-delimited] list of COCO or YOLO classes', type=str)
     parser.add_argument('--model', help='CNN model : set to yolo3 or ssd]', type=str)
+    parser.add_argument('--noframewait', help='wait time (secs) if no frame found', type=int)
     args = parser.parse_args()
 
     _outpath = None
@@ -229,8 +231,8 @@ def get_arguments():
     _threshold = DEFAULT_SSD_THRESHOLD
     _detect_classes = DEFAULT_COCO_CLASS
     _model = SSD_MODEL
+    _noframewait = NO_FRAME_WAIT
 
-    # Process the command line arguments
     if (args.model):
         _model = str.lower(args.model)
 
@@ -242,6 +244,9 @@ def get_arguments():
 
     if (args.blur):
         _blur = True
+
+    if (args.noframewait):
+        _noframewait = int(args.noframewait)
 
     if (args.threshold):
         _threshold = float(args.threshold)
@@ -263,10 +268,10 @@ def get_arguments():
 
     if (args.out):
         # Get the output path for images
-        if not os.path.exists(args.out):
+        if not exists(args.out):
             print("INFO: output path:", args.out, " doesn't exist...creating:", args.out)
-            os.mkdir(args.out)
-            if os.path.exists(args.out):
+            mkdir(args.out)
+            if exists(args.out):
                 _outpath = args.out
             else:
                 print("ERR: can't create output path: ", args.out)
@@ -277,7 +282,7 @@ def get_arguments():
     # Parse the command line args for the capture source
     if (args.video):
         # Open a video file
-        if not os.path.isfile(args.video):
+        if not isfile(args.video):
             print("ERR: input video file: ", args.video, " doesn't exist")
             sys.exit(1)
         else:
@@ -292,7 +297,7 @@ def get_arguments():
     else:
         # ...or default to a local webcam stream
         _capture = cv.VideoCapture(0)
-    return _capture, _outpath, _headless, _showlabels, _threshold, _detect_classes, _blur, _model
+    return _capture, _outpath, _headless, _showlabels, _threshold, _detect_classes, _blur, _model, _noframewait
 
 # COCO classes loader
 def load_COCO_classes(classes_file_path):
@@ -359,8 +364,8 @@ def get_Faster_RCNN_objects(region, net, net_params):
 # -------------------------------------------------
 
 if __name__ == "__main__":
-    # Extract the video source and output directory for annotated images
-    capture, outpath, headless, showlabels, threshold, detect_classes, blur, model = get_arguments()
+    # Extract the various command line parameters
+    capture, outpath, headless, showlabels, threshold, detect_classes, blur, model, noframewait = get_arguments()
 
     # Load the relevant classes and model - default to SSD MobileNet
     if model == YOLO3_MODEL:
@@ -385,8 +390,8 @@ if __name__ == "__main__":
         
         # Skip and sleep if there is no frame
         if not hasFrame:
-            print("WARN: no frame...sleep for {} sec(s)".format(NO_FRAME_SLEEP))
-            time.sleep(NO_FRAME_SLEEP)
+            print("WARN: no frame...waiting {} sec(s)".format(noframewait))
+            time.sleep(noframewait)
             continue
         else:
             height, width = frame.shape[:2]
