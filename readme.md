@@ -76,3 +76,4 @@ https://videos.pexels.com/videos/time-lapse-video-of-runners-855789
 `pip install opencv-python-headless --user`
 
 `pip install supervisor`
+(see http://supervisord.org/introduction.html)
