@@ -15,3 +15,4 @@ faster_rcnn_resnet50_coco_2018_01_28/frozen_inference_graph.pb
 faster_rcnn_resnet50_coco_2018_01_28.pbtxt
 faster_rcnn_resnet50_coco_2018_01_28/checkpoint
 *.jpg
+20190129-175936.jpg
