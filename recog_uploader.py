@@ -11,12 +11,11 @@ import ftplib
 import argparse
 from os import listdir, remove
 from os.path import isfile, join, exists
-import datetime
 import time
 
 # -------------------------------------------------
 
-SLEEP_INTERVAL = (30)   # secs to sleep between scans
+DEFAULT_SLEEP_INTERVAL = (30)   # secs to sleep between scans
 
 # -------------------------------------------------
 
@@ -29,6 +28,7 @@ def get_arguments():
     parser.add_argument('--out', help='path to local (recog output) directory')
     parser.add_argument('--remote', help='path to remote upload directory')
     parser.add_argument('--delete', help='delete local files on upload', action='store_true')
+    parser.add_argument('--interval', help='poll interval (secs)', type=int)
     args = parser.parse_args()
 
     _host = None
@@ -37,6 +37,7 @@ def get_arguments():
     _outpath = None
     _remotepath = None
     _delete = False
+    _interval = DEFAULT_SLEEP_INTERVAL
 
     if (args.delete):
         _delete = True
@@ -61,13 +62,16 @@ def get_arguments():
 
     if (args.password):
         _password = args.password
-    return _host, _user, _password, _outpath, _remotepath, _delete
+
+    if (args.interval):
+        _interval = int(args.interval)
+    return _host, _user, _password, _outpath, _remotepath, _delete, _interval
 
 # -------------------------------------------------
 
 if __name__ == '__main__':
     # Extract the various command line parameters
-    host, username, password, outpath, remotepath, delete = get_arguments()
+    host, username, password, outpath, remotepath, delete, interval = get_arguments()
 
     try:
         ftp = ftplib.FTP(host, username, password)
@@ -102,6 +106,6 @@ if __name__ == '__main__':
                 print('ERR: unable to upload file {} : {}'.format(filename, error))
                 pass
         # Sleep
-        time.sleep(SLEEP_INTERVAL)
+        time.sleep(interval)
 
     ftp.quit()

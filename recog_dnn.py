@@ -34,18 +34,31 @@ def load_TF_net(model_weights, text_graph):
     _net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
     return _net
 
+# Caffe net loader
+def load_Caffe_net(model_weights, text_graph):
+    return cv.dnn.readNetFromCaffe(text_graph, model_weights)
+
 # YOLO v3 net loader
-def load_YOLO3_net(weights, config):
+def load_YOLO3_net(model_weights, text_graph):
     # Load the network
-    return cv.dnn.readNet(weights, config)
+    return cv.dnn.readNet(model_weights, text_graph)
 
 # YOLO v3 output layer retrieval
 def get_YOLO3_output_layers(net):
     layer_names = net.getLayerNames()
     return [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
-# Get the SSD MobileNet candidate object boxes
-def get_SSD_objects(region, net, net_params):
+# Get the SSD MobileNet v1 candidate object boxes
+def get_SSD_MobileNet1_objects(region, net, net_params):
+    height, width = region.shape[:2]
+    # Create a 4D blob from the region
+    blob = cv.dnn.blobFromImage(region, 0.007843, (width, height), 127.5)
+    net.setInput(blob)
+    # Run the forward pass to get object boxes from the output layers
+    return net.forward(net_params)
+
+# Get the SSD MobileNet v2 candidate object boxes
+def get_SSD_MobileNet2_objects(region, net, net_params):
     # resize frame for prediction
     # region_resized = cv.resize(region, (300,300))
     # Create a 4D blob from the region

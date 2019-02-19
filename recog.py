@@ -36,6 +36,11 @@ COCO_classes = ["background", "person", "bicycle", "car", "motorcycle",
     "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "unknown",
     "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" ]
 
+SSD_MN1_CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
+	"bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
+	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
+	"sofa", "train", "tvmonitor"]
+
 APP_NAME = 'recog : cloudwise.co : '
 
 CV_TEXT_SIZE        = 0.5
@@ -190,9 +195,12 @@ if __name__ == "__main__":
     elif model == FASTER_RCNN_MODEL:
         classes = load_COCO_classes(FASTER_RCNN_MODEL_PATH + "mscoco_labels.names")
         net = load_TF_net(FASTER_RCNN_MODEL_WEIGHTS, FASTER_RCNN_TEXT_GRAPH)
+    elif model == SSD_MN1_MODEL:
+        classes = SSD_MN1_CLASSES
+        net = load_Caffe_net(SSD_MN1_MODEL_WEIGHTS, SSD_MN1_TEXT_GRAPH)
     else:
-        classes = load_COCO_classes(SSD_MODEL_PATH + "mscoco_labels.names")
-        net = load_TF_net(SSD_MODEL_WEIGHTS, SSD_TEXT_GRAPH)
+        classes = load_COCO_classes(SSD_MN2_MODEL_PATH + "mscoco_labels.names")
+        net = load_TF_net(SSD_MN2_MODEL_WEIGHTS, SSD_MN2_TEXT_GRAPH)
 
     # Set the output window name (assuming there is a GUI output path)
     if not headless:
@@ -221,8 +229,11 @@ if __name__ == "__main__":
         elif model == FASTER_RCNN_MODEL:
             predictions = get_Faster_RCNN_objects(frame, net, None)
             found = objects_from_single_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
-        else:   # SSD model
-            predictions = get_SSD_objects(frame, net, None)
+        elif model == SSD_MN1_MODEL:
+            predictions = get_SSD_MobileNet1_objects(frame, net, None)
+            found = objects_from_single_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
+        else:   # model == SSD_MN2_MODEL:
+            predictions = get_SSD_MobileNet2_objects(frame, net, None)
             found = objects_from_single_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
 
         # Watermark the frame

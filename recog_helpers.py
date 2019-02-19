@@ -18,24 +18,32 @@ else:
 
 # -------------------------------------------------
 
-DEFAULT_SSD_THRESHOLD           = 0.8   # SSD confidence threshold - was 0.3
+DEFAULT_SSD_MN1_THRESHOLD       = 0.4   # SSD MobileNet v1 confidence threshold
+DEFAULT_SSD_MN2_THRESHOLD       = 0.4   # SSD MobileNet v2 confidence threshold - was 0.3
 DEFAULT_YOLO3_THRESHOLD         = 0.75  # YOLO v3 confidence threshold
 DEFAULT_FASTER_RCNN_THRESHOLD   = 0.4   # Faster RCNN confidence threshold
 
-DEFAULT_COCO_CLASS    = {1}             # Person from the COCO set   
-DEFAULT_YOLO3_CLASS   = {0}             # Person from the YOLOv3 set   
+DEFAULT_SSD_MN1_CLASS = {15}            # Person from the SSD MobileNet v1 Caffe traing set   
+DEFAULT_COCO_CLASS    = {1}             # Person from the COCO training set   
+DEFAULT_YOLO3_CLASS   = {0}             # Person from the YOLOv3 training set   
 DEFAULT_NMS_THRESHOLD = 0.4
 
-SSD_MODEL   = "ssdmn2"
-YOLO3_MODEL = "yolo3"
+SSD_MN1_MODEL   = "ssdmn1"
+SSD_MN2_MODEL   = "ssdmn2"
+YOLO3_MODEL     = "yolo3"
 FASTER_RCNN_MODEL = "fasterrcnn"
 # MASK_RCNN_MODEL = "maskrcnn"
 
 # MASK_RCNN_MODEL_PATH = "./mask_rcnn_inception_v2_coco_2018_01_28/"
 # MASK_RCNN_TEXT_GRAPH = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
-SSD_MODEL_PATH = "./" + SSD_MODEL + "/"
-SSD_TEXT_GRAPH = SSD_MODEL_PATH + "ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
-SSD_MODEL_WEIGHTS = SSD_MODEL_PATH + "frozen_inference_graph.pb"
+
+SSD_MN1_MODEL_PATH = "./" + SSD_MN1_MODEL + "/"
+SSD_MN1_TEXT_GRAPH = SSD_MN1_MODEL_PATH + "deploy.prototxt"
+SSD_MN1_MODEL_WEIGHTS = SSD_MN1_MODEL_PATH + "mobilenet_iter_73000.caffemodel"
+
+SSD_MN2_MODEL_PATH = "./" + SSD_MN2_MODEL + "/"
+SSD_MN2_TEXT_GRAPH = SSD_MN2_MODEL_PATH + "ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
+SSD_MN2_MODEL_WEIGHTS = SSD_MN2_MODEL_PATH + "frozen_inference_graph.pb"
 
 YOLO3_MODEL_PATH = "./" + YOLO3_MODEL + "/"
 YOLO3_TEXT_GRAPH = YOLO3_MODEL_PATH + "yolov3.cfg"
@@ -61,7 +69,7 @@ def get_arguments():
     parser.add_argument('--headless', help='disable X-server output', action='store_true')
     parser.add_argument('--showlabels', help='enable object labels', action='store_true')
     parser.add_argument('--blur', help='blur object region(s)', action='store_true')
-    parser.add_argument('--threshold', help='set the detection threshold', type=float, default=DEFAULT_SSD_THRESHOLD)
+    parser.add_argument('--threshold', help='set the detection threshold', type=float)
     parser.add_argument('--classes', help='[comma-delimited] list of COCO or YOLO classes', type=str)
     parser.add_argument('--model', help='CNN model : set to yolo3 or ssd]', type=str)
     parser.add_argument('--noframewait', help='wait time (secs) if no frame found', type=int)
@@ -73,9 +81,9 @@ def get_arguments():
     _headless = False
     _showlabels = False
     _blur = False
-    _threshold = DEFAULT_SSD_THRESHOLD
-    _detect_classes = DEFAULT_COCO_CLASS
-    _model = SSD_MODEL
+    _threshold = DEFAULT_SSD_MN1_THRESHOLD
+    _detect_classes = DEFAULT_SSD_MN1_CLASS
+    _model = SSD_MN1_MODEL
     _noframewait = NO_FRAME_WAIT
     _interval = DEFAULT_POLL_WAIT
 
@@ -103,8 +111,10 @@ def get_arguments():
         _threshold = DEFAULT_YOLO3_THRESHOLD
     elif _model == FASTER_RCNN_MODEL:
         _threshold = DEFAULT_FASTER_RCNN_THRESHOLD
+    elif _model == SSD_MN1_MODEL:
+        _threshold = DEFAULT_SSD_MN1_THRESHOLD
     else:
-        _threshold = DEFAULT_SSD_THRESHOLD
+        _threshold = DEFAULT_SSD_MN2_THRESHOLD
 
     if (args.classes):
         _detect_classes = [int(item) for item in args.classes.split(',')]
@@ -112,6 +122,8 @@ def get_arguments():
         _detect_classes = list(set(_detect_classes))
     elif _model == YOLO3_MODEL:
         _detect_classes = DEFAULT_YOLO3_CLASS
+    elif _model == SSD_MN1_MODEL:
+        _detect_classes = DEFAULT_SSD_MN1_CLASS
     else:
         _detect_classes = DEFAULT_COCO_CLASS
 
