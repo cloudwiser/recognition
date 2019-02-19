@@ -48,28 +48,30 @@ DEFAULT_COCO_CLASS    = {1}             # Person from the COCO set
 DEFAULT_YOLO3_CLASS   = {0}             # Person from the YOLOv3 set   
 DEFAULT_NMS_THRESHOLD = 0.4
 
-SSD_MODEL   = "ssd"
+SSD_MODEL   = "ssdmn2"
 YOLO3_MODEL = "yolo3"
 FASTER_RCNN_MODEL = "fasterrcnn"
 # MASK_RCNN_MODEL = "maskrcnn"
 
 # MASK_RCNN_MODEL_PATH = "./mask_rcnn_inception_v2_coco_2018_01_28/"
 # MASK_RCNN_TEXT_GRAPH = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
-SSD_MODEL_PATH = "./ssd_mobilenet_v2_coco_2018_03_29/"
-SSD_TEXT_GRAPH = "./ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
+SSD_MODEL_PATH = "./" + SSD_MODEL + "/"
+SSD_TEXT_GRAPH = SSD_MODEL_PATH + "ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
 SSD_MODEL_WEIGHTS = SSD_MODEL_PATH + "frozen_inference_graph.pb"
 
-YOLO3_TEXT_GRAPH = "./yolov3.cfg"
-YOLO3_MODEL_WEIGHTS = "./yolov3.weights"
+YOLO3_MODEL_PATH = "./" + YOLO3_MODEL + "/"
+YOLO3_TEXT_GRAPH = YOLO3_MODEL_PATH + "yolov3.cfg"
+YOLO3_MODEL_WEIGHTS = YOLO3_MODEL_PATH + "yolov3.weights"
 
-FASTER_RCNN_MODEL_PATH = "./faster_rcnn_resnet50_coco_2018_01_28/"
-FASTER_RCNN_TEXT_GRAPH = "./faster_rcnn_resnet50_coco_2018_01_28.pbtxt"
+FASTER_RCNN_MODEL_PATH = "./" + FASTER_RCNN_MODEL + "/"
+FASTER_RCNN_TEXT_GRAPH = FASTER_RCNN_MODEL_PATH + "faster_rcnn_resnet50_coco_2018_01_28.pbtxt"
 FASTER_RCNN_MODEL_WEIGHTS = FASTER_RCNN_MODEL_PATH + "frozen_inference_graph.pb"
 
 DEFAULT_OUTPUT_PATH = './out'
 APP_NAME = 'recog : cloudwise.co : '
 
-NO_FRAME_WAIT      = (10)
+NO_FRAME_WAIT       = (10)
+DEFAULT_POLL_WAIT   = (0)
 
 CV_TEXT_SIZE        = 0.5
 CV_BOUNDING_COLOR   = (255, 178, 50)
@@ -222,6 +224,8 @@ def get_arguments():
     parser.add_argument('--classes', help='[comma-delimited] list of COCO or YOLO classes', type=str)
     parser.add_argument('--model', help='CNN model : set to yolo3 or ssd]', type=str)
     parser.add_argument('--noframewait', help='wait time (secs) if no frame found', type=int)
+    parser.add_argument('--interval', help='poll interval (secs)', type=int)
+
     args = parser.parse_args()
 
     _outpath = None
@@ -232,6 +236,7 @@ def get_arguments():
     _detect_classes = DEFAULT_COCO_CLASS
     _model = SSD_MODEL
     _noframewait = NO_FRAME_WAIT
+    _interval = DEFAULT_POLL_WAIT
 
     if (args.model):
         _model = str.lower(args.model)
@@ -247,6 +252,9 @@ def get_arguments():
 
     if (args.noframewait):
         _noframewait = int(args.noframewait)
+
+    if (args.interval):
+        _interval = int(args.interval)
 
     if (args.threshold):
         _threshold = float(args.threshold)
@@ -297,7 +305,8 @@ def get_arguments():
     else:
         # ...or default to a local webcam stream
         _capture = cv.VideoCapture(0)
-    return _capture, _outpath, _headless, _showlabels, _threshold, _detect_classes, _blur, _model, _noframewait
+    return _capture, _outpath, _headless, _showlabels, _threshold, \
+        _detect_classes, _blur, _model, _noframewait, _interval
 
 # COCO classes loader
 def load_COCO_classes(classes_file_path):
@@ -365,7 +374,8 @@ def get_Faster_RCNN_objects(region, net, net_params):
 
 if __name__ == "__main__":
     # Extract the various command line parameters
-    capture, outpath, headless, showlabels, threshold, detect_classes, blur, model, noframewait = get_arguments()
+    capture, outpath, headless, showlabels, threshold, \
+        detect_classes, blur, model, noframewait, interval = get_arguments()
 
     # Load the relevant classes and model - default to SSD MobileNet
     if model == YOLO3_MODEL:
@@ -383,7 +393,7 @@ if __name__ == "__main__":
         cv.namedWindow(APP_NAME, cv.WINDOW_NORMAL)
 
     # Frame processing loop
-    print("INFO: starting frame processing...")
+    print("INFO: frame acquisition...")
     while True:
         # Get a frame from the video/image/stream
         hasFrame, frame = capture.read()
@@ -405,7 +415,7 @@ if __name__ == "__main__":
         elif model == FASTER_RCNN_MODEL:
             predictions = get_Faster_RCNN_objects(frame, net, None)
             found = objects_from_single_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
-        else:
+        else:   # SSD model
             predictions = get_SSD_objects(frame, net, None)
             found = objects_from_single_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
 
@@ -430,6 +440,9 @@ if __name__ == "__main__":
         if not headless and cv.waitKey(1) == 27: 
             frame.release()
             break
+
+        # Wait
+        time.sleep(interval)
 
 print("INF: stopped frame processing")
 if not headless:
