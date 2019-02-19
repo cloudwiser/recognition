@@ -1,5 +1,5 @@
 # -------------------------------------------------
-# OpenCV DNN-based Object Recogniser
+# recog : a OpenCV DNN-based Object Recogniser
 # 
 # With thanks to Satya Mallick & Sunita Nayak
 # https://github.com/spmallick/learnopencv/tree/master/Mask-RCNN
