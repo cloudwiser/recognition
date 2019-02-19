@@ -25,3 +25,4 @@ ssdmn2/ssd_mobilenet_v2_coco_2018_03_29/model.ckpt.data-00000-of-00001
 ssdmn2/ssd_mobilenet_v2_coco_2018_03_29/model.ckpt.index
 ssdmn2/ssd_mobilenet_v2_coco_2018_03_29/model.ckpt.meta
 yolo3/yolov3.cfg
+*.pyc

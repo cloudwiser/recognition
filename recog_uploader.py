@@ -1,5 +1,5 @@
 # -------------------------------------------------
-# recog FTP uploader
+# recog_uploader : a FTP uploader for (recog) output
 # 
 # Nick Hall : cloudwise.co
 # 
