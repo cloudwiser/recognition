@@ -379,13 +379,13 @@ if __name__ == "__main__":
 
     # Load the relevant classes and model - default to SSD MobileNet
     if model == YOLO3_MODEL:
-        classes = load_YOLO3_classes("yolov3.classes")
+        classes = load_YOLO3_classes(YOLO3_MODEL_PATH + "yolov3.classes")
         net = load_YOLO3_net(YOLO3_MODEL_WEIGHTS, YOLO3_TEXT_GRAPH)
     elif model == FASTER_RCNN_MODEL:
-        classes = load_COCO_classes("mscoco_labels.names")
+        classes = load_COCO_classes(FASTER_RCNN_MODEL_PATH + "mscoco_labels.names")
         net = load_TF_net(FASTER_RCNN_MODEL_WEIGHTS, FASTER_RCNN_TEXT_GRAPH)
     else:
-        classes = load_COCO_classes("mscoco_labels.names")
+        classes = load_COCO_classes(SSD_MODEL_PATH + "mscoco_labels.names")
         net = load_TF_net(SSD_MODEL_WEIGHTS, SSD_TEXT_GRAPH)
 
     # Set the output window name (assuming there is a GUI output path)
