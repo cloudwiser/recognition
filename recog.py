@@ -54,8 +54,8 @@ def objects_from_single_layer_output(frame, classes, detect_classes, predictions
     _found = 0
     # num_classes = masks.shape[1]
     # num_detections = predictions.shape[2]
-    frameH = frame.shape[0]
-    frameW = frame.shape[1]
+    height = frame.shape[0]
+    width = frame.shape[1]
 
     # Obfuscate the frame for privacy?
     if blur:
@@ -76,15 +76,15 @@ def objects_from_single_layer_output(frame, classes, detect_classes, predictions
                 _found += 1
 
             # Extract the bounding box
-            left = int(frameW * detection[3])
-            top = int(frameH * detection[4])
-            right = int(frameW * detection[5])
-            bottom = int(frameH * detection[6])
+            left = int(width * detection[3])
+            top = int(height * detection[4])
+            right = int(width * detection[5])
+            bottom = int(height * detection[6])
             
-            left = max(0, min(left, frameW - 1))
-            top = max(0, min(top, frameH - 1))
-            right = max(0, min(right, frameW - 1))
-            bottom = max(0, min(bottom, frameH - 1))
+            left = max(0, min(left, width - 1))
+            top = max(0, min(top, height - 1))
+            right = max(0, min(right, width - 1))
+            bottom = max(0, min(bottom, height - 1))
 
             # Draw bounding box on the image
             cv.rectangle(frame, (left, top), (right, bottom), CV_BOUNDING_COLOR, 1)            
@@ -100,8 +100,8 @@ def objects_from_multi_layer_output(frame, classes, detect_classes, predictions,
     class_ids = []
     confidences = []
     boxes = []
-    width = frame.shape[1]
     height = frame.shape[0]
+    width = frame.shape[1]
 
     # Obfuscate the frame for privacy?
     if blur:
@@ -161,8 +161,10 @@ def objects_from_multi_layer_output(frame, classes, detect_classes, predictions,
 # Blur object regions for obfuscation
 def blur_region(frame, top, bottom, left, right):
     region = frame[top:bottom, left:right]
+    
     # apply a gaussian blur on the bounding region
     region = cv.GaussianBlur(region, (23, 23), 30)
+    
     # merge this blurry rectangle into the frame
     frame[top:top + region.shape[0], left:left + region.shape[1]] = region
     return frame           
