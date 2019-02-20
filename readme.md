@@ -77,3 +77,8 @@ https://videos.pexels.com/videos/time-lapse-video-of-runners-855789
 
 `pip install supervisor`
 (see http://supervisord.org/introduction.html)
+
+
+##### MPEG4 motion vector rendering:
+
+`ffplay -flags2 +export_mvs runners.mp4 -vf codecview=mv=pf+bf+bb`
