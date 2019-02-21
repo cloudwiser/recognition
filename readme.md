@@ -7,15 +7,17 @@ https://github.com/opencv/opencv_extra/tree/master/testdata/dnn
 
 ##### Installation on Linux: (Mask RCNN example)
 
-`wget http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz`
-
-`tar zxvf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz`
+```sh
+$ wget http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
+$ tar zxvf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
+```
 
 ##### Install on MacOS: (Mask RCNN example)
 
-`curl -O http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz`
-
-`tar zxvf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz`
+```sh
+$ curl -O http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
+$ tar zxvf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
+```
 
 ##### OpenCV installation:
 
@@ -53,29 +55,21 @@ https://videos.pexels.com/videos/time-lapse-video-of-runners-855789
 
 ##### Headless OpenCV install on AWS Linux:
 
-`sudo yum update`
+```sh
+$ sudo yum update
+$ sudo yum install git cmake gcc-c++ cmake3
+$ git clone https://github.com/Itseez/opencv.git
+$ cd opencv
+$ mkdir ./build
+$ git checkout
+$ cd ./build
+$ cmake3 ../
+$ sudo yum install numpy python-devel pip
+$ sudo pip install opencv-python
+$ pip install opencv-python-headless --user
+$ pip install supervisor
+```
 
-`sudo yum install git cmake gcc-c++ cmake3`
-
-`git clone https://github.com/Itseez/opencv.git`
-
-`cd opencv`
-
-`mkdir ./build`
-
-`git checkout`
-
-`cd ./build`
-
-`cmake3 ../`
-
-`sudo yum install numpy python-devel pip`
-
-`sudo pip install opencv-python`
-
-`pip install opencv-python-headless --user`
-
-`pip install supervisor`
 (see http://supervisord.org/introduction.html)
 
 
