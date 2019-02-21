@@ -38,7 +38,7 @@ $ pip install opencv-python-headless
 The pbtxt file for the associated CNN model architecture should be on the tf or opencv GitHub - see Useful References above - but, if not, can be generated thus:
 
 ```sh
-python tf_text_graph_faster_rcnn.py --input /path/to/model.pb --config /path/to/example.config --output /path/to/graph.pbtxt
+$ python tf_text_graph_faster_rcnn.py --input /path/to/model.pb --config /path/to/example.config --output /path/to/graph.pbtxt
 ```
 
 Example:
@@ -83,4 +83,6 @@ $ pip install supervisor
 
 ##### MPEG4 motion vector rendering:
 
-`ffplay -flags2 +export_mvs runners.mp4 -vf codecview=mv=pf+bf+bb`
+```sh
+$ ffplay -flags2 +export_mvs runners.mp4 -vf codecview=mv=pf+bf+bb
+```
