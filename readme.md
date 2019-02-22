@@ -85,4 +85,5 @@ $ pip install supervisor
 
 ```sh
 $ ffplay -flags2 +export_mvs runners.mp4 -vf codecview=mv=pf+bf+bb
+$ ffmpeg -flags2 +export_mvs -i input.mp4 -vf codecview=mv=pf+bf+bb output.mp4
 ```

@@ -18,28 +18,10 @@ import numpy as np
 import datetime
 import time
 
-from utils.recog_argparse import *
-from utils.recog_dnn import *
+from .utils.recog_argparse import *
+from .utils.recog_dnn import *
 
 # -------------------------------------------------
-
-COCO_classes = ["background", "person", "bicycle", "car", "motorcycle",
-    "airplane", "bus", "train", "truck", "boat", "traffic light", "fire hydrant",
-    "unknown", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse",
-    "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "unknown", "backpack",
-    "umbrella", "unknown", "unknown", "handbag", "tie", "suitcase", "frisbee", "skis",
-    "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard",
-    "surfboard", "tennis racket", "bottle", "unknown", "wine glass", "cup", "fork", "knife",
-    "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog",
-    "pizza", "donut", "cake", "chair", "couch", "potted plant", "bed", "unknown", "dining table",
-    "unknown", "unknown", "toilet", "unknown", "tv", "laptop", "mouse", "remote", "keyboard",
-    "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "unknown",
-    "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" ]
-
-SSD_MN1_CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
-	"bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
-	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
-	"sofa", "train", "tvmonitor"]
 
 APP_NAME = 'recog : cloudwise.co : '
 
@@ -198,7 +180,7 @@ if __name__ == "__main__":
         classes = load_COCO_classes(FASTER_RCNN_MODEL_PATH + "mscoco_labels.names")
         net = load_TF_net(FASTER_RCNN_MODEL_WEIGHTS, FASTER_RCNN_TEXT_GRAPH)
     elif model == SSD_MN1_MODEL:
-        classes = SSD_MN1_CLASSES
+        classes = load_COCO_classes(SSD_MN1_MODEL_PATH + "ssdmn1.classes")
         net = load_Caffe_net(SSD_MN1_MODEL_WEIGHTS, SSD_MN1_TEXT_GRAPH)
     else:
         classes = load_COCO_classes(SSD_MN2_MODEL_PATH + "mscoco_labels.names")
