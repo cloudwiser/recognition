@@ -37,21 +37,25 @@ FASTER_RCNN_MODEL = "fasterrcnn"
 # MASK_RCNN_MODEL_PATH = "./mask_rcnn_inception_v2_coco_2018_01_28/"
 # MASK_RCNN_TEXT_GRAPH = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
 
-SSD_MN1_MODEL_PATH = "./models/" + SSD_MN1_MODEL + "/"
-SSD_MN1_TEXT_GRAPH = SSD_MN1_MODEL_PATH + "deploy.prototxt"
-SSD_MN1_MODEL_WEIGHTS = SSD_MN1_MODEL_PATH + "mobilenet_iter_73000.caffemodel"
+# SSD_MN1_MODEL_PATH = "./models/" + SSD_MN1_MODEL + "/"
+# SSD_MN1_TEXT_GRAPH = SSD_MN1_MODEL_PATH + "deploy.prototxt"
+# SSD_MN1_MODEL_WEIGHTS = SSD_MN1_MODEL_PATH + "mobilenet_iter_73000.caffemodel"
+# SSD_MN1_MODEL_CLASSES = SSD_MN1_MODEL_PATH + "ssdmn1.classes"
 
-SSD_MN2_MODEL_PATH = "./models/" + SSD_MN2_MODEL + "/"
-SSD_MN2_TEXT_GRAPH = SSD_MN2_MODEL_PATH + "ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
-SSD_MN2_MODEL_WEIGHTS = SSD_MN2_MODEL_PATH + "frozen_inference_graph.pb"
+# SSD_MN2_MODEL_PATH = "./models/" + SSD_MN2_MODEL + "/"
+# SSD_MN2_TEXT_GRAPH = SSD_MN2_MODEL_PATH + "ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
+# SSD_MN2_MODEL_WEIGHTS = SSD_MN2_MODEL_PATH + "frozen_inference_graph.pb"
+# SSD_MN2_MODEL_CLASSES = SSD_MN2_MODEL_PATH + "mscoco_labels.names"
 
-YOLO3_MODEL_PATH = "./models/" + YOLO3_MODEL + "/"
-YOLO3_TEXT_GRAPH = YOLO3_MODEL_PATH + "yolov3.cfg"
-YOLO3_MODEL_WEIGHTS = YOLO3_MODEL_PATH + "yolov3.weights"
+# YOLO3_MODEL_PATH = "./models/" + YOLO3_MODEL + "/"
+# YOLO3_TEXT_GRAPH = YOLO3_MODEL_PATH + "yolov3.cfg"
+# YOLO3_MODEL_WEIGHTS = YOLO3_MODEL_PATH + "yolov3.weights"
+# YOLO3_MODEL_CLASSES = YOLO3_MODEL_PATH + "yolov3.classes"
 
-FASTER_RCNN_MODEL_PATH = "./models/" + FASTER_RCNN_MODEL + "/"
-FASTER_RCNN_TEXT_GRAPH = FASTER_RCNN_MODEL_PATH + "faster_rcnn_resnet50_coco_2018_01_28.pbtxt"
-FASTER_RCNN_MODEL_WEIGHTS = FASTER_RCNN_MODEL_PATH + "frozen_inference_graph.pb"
+# FASTER_RCNN_MODEL_PATH = "./models/" + FASTER_RCNN_MODEL + "/"
+# FASTER_RCNN_TEXT_GRAPH = FASTER_RCNN_MODEL_PATH + "faster_rcnn_resnet50_coco_2018_01_28.pbtxt"
+# FASTER_RCNN_MODEL_WEIGHTS = FASTER_RCNN_MODEL_PATH + "frozen_inference_graph.pb"
+# FASTER_RCNN_MODEL_CLASSES = FASTER_RCNN_MODEL_PATH + "mscoco_labels.names"
 
 DEFAULT_OUTPUT_PATH = './out'
 
@@ -70,10 +74,13 @@ def get_arguments():
     parser.add_argument('--showlabels', help='enable object labels', action='store_true')
     parser.add_argument('--blur', help='blur object region(s)', action='store_true')
     parser.add_argument('--threshold', help='set the detection threshold', type=float)
-    parser.add_argument('--classes', help='[comma-delimited] list of COCO or YOLO classes', type=str)
-    parser.add_argument('--model', help='CNN model : set to yolo3 or ssd]', type=str)
+    parser.add_argument('--detect', help='[comma-delimited] list of COCO or YOLO classes', type=str)
+    parser.add_argument('--model', help='set to [yolo3 | ssdmn1 | ssdmn2]', type=str)
     parser.add_argument('--noframewait', help='wait time (secs) if no frame found', type=int)
-    parser.add_argument('--interval', help='poll interval (secs)', type=int)
+    parser.add_argument('--interval', help='poll interval (secs)')
+    parser.add_argument('--weights', help='path to the weights file')
+    parser.add_argument('--graph', help='path to model graph file')
+    parser.add_argument('--classes', help='path to classes definition file')
 
     args = parser.parse_args()
 
@@ -82,10 +89,13 @@ def get_arguments():
     _showlabels = False
     _blur = False
     _threshold = DEFAULT_SSD_MN1_THRESHOLD
-    _detect_classes = DEFAULT_SSD_MN1_CLASS
+    _detect = DEFAULT_SSD_MN1_CLASS
     _model = SSD_MN1_MODEL
     _noframewait = NO_FRAME_WAIT
     _interval = DEFAULT_POLL_WAIT
+    _graph = None
+    _weights = None
+    _classes = None
 
     if (args.model):
         _model = str.lower(args.model)
@@ -116,21 +126,21 @@ def get_arguments():
     else:
         _threshold = DEFAULT_SSD_MN2_THRESHOLD
 
-    if (args.classes):
-        _detect_classes = [int(item) for item in args.classes.split(',')]
+    if (args.detect):
+        _detect = [int(item) for item in args.detect.split(',')]
         # Use list > set > list to remove any duplicate classes
-        _detect_classes = list(set(_detect_classes))
+        _detect = list(set(_detect))
     elif _model == YOLO3_MODEL:
-        _detect_classes = DEFAULT_YOLO3_CLASS
+        _detect = DEFAULT_YOLO3_CLASS
     elif _model == SSD_MN1_MODEL:
-        _detect_classes = DEFAULT_SSD_MN1_CLASS
+        _detect = DEFAULT_SSD_MN1_CLASS
     else:
-        _detect_classes = DEFAULT_COCO_CLASS
+        _detect = DEFAULT_COCO_CLASS
 
     if (args.out):
         # Get the output path for images
         if not exists(args.out):
-            print("INFO: output path:", args.out, " doesn't exist...creating:", args.out)
+            print("INFO: output path:", args.out, " not found...creating:", args.out)
             mkdir(args.out)
             if exists(args.out):
                 _outpath = args.out
@@ -144,19 +154,39 @@ def get_arguments():
     if (args.video):
         # Open a video file
         if not isfile(args.video):
-            print("ERR: input video file: ", args.video, " doesn't exist")
+            print("ERR: input video file: ", args.video, " not found")
             sys.exit(1)
         else:
             _capture = cv.VideoCapture(args.video)
     elif (args.stream):
         # Open a video stream
         if not urlparse(args.stream).scheme:
-            print("ERR: input video stream: ", args.stream, " doesn't exist")
+            print("ERR: input video stream: ", args.stream, " not found")
             sys.exit(1)
         else:
             _capture = cv.VideoCapture(args.stream)
     else:
         # ...or default to a local webcam stream
         _capture = cv.VideoCapture(0)
+    
+     # Parse the command line args for the classes, graph and weights files 
+    if args.graph and isfile(args.graph):
+        _graph = args.graph
+    else:
+        print("ERR: model graph file: ", args.graph, " not found")
+        sys.exit(1)
+
+    if args.weights and isfile(args.weights):
+        _weights = args.weights
+    else:
+        print("ERR: model weights file: ", args.weights, " not found")
+        sys.exit(1)
+
+    if args.classes and isfile(args.classes):
+        _classes = args.classes
+    else:
+        print("ERR: classes file: ", args.classes, " not found")
+        sys.exit(1)        
+
     return _capture, _outpath, _headless, _showlabels, _threshold, \
-        _detect_classes, _blur, _model, _noframewait, _interval
+        _detect, _blur, _model, _noframewait, _interval, _graph, _weights, _classes

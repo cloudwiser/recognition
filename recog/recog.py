@@ -170,21 +170,18 @@ def show_labels(frame, top, left, class_id, classes, score):
 if __name__ == "__main__":
     # Extract the various command line parameters
     capture, outpath, headless, showlabels, threshold, \
-        detect_classes, blur, model, noframewait, interval = get_arguments()
+        detect, blur, model, noframewait, interval, graph, weights, classes = get_arguments()
 
-    # Load the relevant classes and model - default to SSD MobileNet
+    # Load the relevant classes and model
     if model == YOLO3_MODEL:
-        classes = load_YOLO3_classes(YOLO3_MODEL_PATH + "yolov3.classes")
-        net = load_YOLO3_net(YOLO3_MODEL_WEIGHTS, YOLO3_TEXT_GRAPH)
-    elif model == FASTER_RCNN_MODEL:
-        classes = load_COCO_classes(FASTER_RCNN_MODEL_PATH + "mscoco_labels.names")
-        net = load_TF_net(FASTER_RCNN_MODEL_WEIGHTS, FASTER_RCNN_TEXT_GRAPH)
+        classes = load_YOLO3_classes(classes)
+        net = load_YOLO3_net(weights, graph)
     elif model == SSD_MN1_MODEL:
-        classes = load_COCO_classes(SSD_MN1_MODEL_PATH + "ssdmn1.classes")
-        net = load_Caffe_net(SSD_MN1_MODEL_WEIGHTS, SSD_MN1_TEXT_GRAPH)
+        classes = load_COCO_classes(classes)
+        net = load_Caffe_net(weights, graph)
     else:
-        classes = load_COCO_classes(SSD_MN2_MODEL_PATH + "mscoco_labels.names")
-        net = load_TF_net(SSD_MN2_MODEL_WEIGHTS, SSD_MN2_TEXT_GRAPH)
+        classes = load_COCO_classes(classes)
+        net = load_TF_net(weights, graph)
 
     # Set the output window name (assuming there is a GUI output path)
     if not headless:
@@ -207,18 +204,18 @@ if __name__ == "__main__":
         # Get the object predictions and annotate the frame - default to SSD MobileNet
         if model == YOLO3_MODEL:
             predictions = get_YOLO3_objects(frame, net, get_YOLO3_output_layers(net))
-            found = objects_from_multi_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
+            found = objects_from_multi_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
         # elif model == MASK_RCNN_MODEL:
         #   predictions, masks = get_mask_RCNN_objects(frame, net, ['detection_out_final', 'detection_masks'])
         elif model == FASTER_RCNN_MODEL:
             predictions = get_Faster_RCNN_objects(frame, net, None)
-            found = objects_from_single_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
+            found = objects_from_single_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
         elif model == SSD_MN1_MODEL:
             predictions = get_SSD_MobileNet1_objects(frame, net, None)
-            found = objects_from_single_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
+            found = objects_from_single_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
         else:   # model == SSD_MN2_MODEL:
             predictions = get_SSD_MobileNet2_objects(frame, net, None)
-            found = objects_from_single_layer_output(frame, classes, detect_classes, predictions, threshold, showlabels, blur)
+            found = objects_from_single_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
 
         # Watermark the frame
         timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
