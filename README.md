@@ -35,11 +35,11 @@ $ pip install opencv-python-headless
 
 ##### Model weights and graphs:
 
-I have omitted the model weight files from the repo given are huge and exceed the GH limit.
-Read the recog_argparse.py for the names of the relevant files to search for - some are obtained from the OpenCV DNN
-'model zoo' page on GitHub.
+I have omitted the model weight files given are huge and exceed the GitHub repo limit.
 
-I'll endeavour to post the links here to the necessary SSD Mobilenet v1 and v3 and the YOLO v3 files
+Please take a look at the header of recog_argparse.py for the names of the relevant files to search for - some are obtained from the OpenCV DNN 'model zoo' page on GitHub.
+
+TODO - add the links here to the necessary files for SSD Mobilenet v1 & v2, YOLO v3 and Faster-RCNN files
 
 
 ##### TF graph creation:
