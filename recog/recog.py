@@ -18,8 +18,8 @@ import numpy as np
 import datetime
 import time
 
-from .utils.recog_argparse import *
-from .utils.recog_dnn import *
+from utils.recog_argparse import *
+from utils.recog_dnn import *
 
 # -------------------------------------------------
 
