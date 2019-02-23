@@ -50,9 +50,9 @@ $ python tf_text_graph_ssd.py --input ./ssd_mobilenet_v2_coco_2018_03_29/frozen_
 ##### Usage examples:
 
 ```sh
-$ python3 recog.py --video=people.mpg
-$ python3 recog.py --stream='http://192.168.0.1/video.cgi'
-$ python3 recog.py  
+$ python3 recog.py --stream='http://192.168.0.1/video.cgi' --classes='./models/yolo3/yolo3.classes' --weights='./models/yolo3/yolo3.weights' --model='./models/yolo3/yolo3.cfg' 
+$ python3 recog.py --video=people.mpg   [ --classes=''  --weights=''  --model='' ]
+$ python3 recog.py  [ --classes=''  --weights=''  --model='' ]
 (uses your local webcam as video source)
 ```
 
