@@ -74,7 +74,7 @@ def get_arguments():
     parser.add_argument('--showlabels', help='enable object labels', action='store_true')
     parser.add_argument('--blur', help='blur object region(s)', action='store_true')
     parser.add_argument('--threshold', help='set the detection threshold', type=float)
-    parser.add_argument('--detect', help='[comma-delimited] list of COCO or YOLO classes', type=str)
+    parser.add_argument('--detect', help='[comma-delimited] list of model classes to detect', type=str)
     parser.add_argument('--model', help='set to [yolo3 | ssdmn1 | ssdmn2]', type=str)
     parser.add_argument('--noframewait', help='wait time (secs) if no frame found', type=int)
     parser.add_argument('--interval', help='poll interval (secs)')
