@@ -21,7 +21,7 @@ $ tar zxvf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
 
 ##### OpenCV installation:
 
-Install 4.0.0 - using versions before 3.4.3 will throw CNN moddel exceptions given this functionality was not supported:
+Install 4.0.0 - versions before 3.4.3 will throw CNN model exceptions given there was no cv.dnn functionality
 
 ```sh
 $ pip install opencv-python
@@ -32,6 +32,15 @@ If you are running without the need or access to an X server, there is the (ligh
 ```sh
 $ pip install opencv-python-headless
 ```
+
+##### Model weights and graphs:
+
+I have omitted the model weight files from the repo given are huge and exceed the GH limit.
+Read the recog_argparse.py for the names of the relevant files to search for - some are obtained from the OpenCV DNN
+'model zoo' page on GitHub.
+
+I'll endeavour to post the links here to the necessary SSD Mobilenet v1 and v3 and the YOLO v3 files
+
 
 ##### TF graph creation:
 
