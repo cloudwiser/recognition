@@ -5,7 +5,7 @@
 https://github.com/opencv/opencv/wiki/TensorFlow-Object-Detection-API
 https://github.com/opencv/opencv_extra/tree/master/testdata/dnn
 
-##### Installation on Linux: (Mask RCNN example)
+##### Installation on Linux: (Mask RCNN example) 
 
 ```sh
 $ wget http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
