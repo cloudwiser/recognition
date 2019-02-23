@@ -201,7 +201,7 @@ if __name__ == "__main__":
         else:
             height, width = frame.shape[:2]
 
-        # Get the object predictions and annotate the frame - default to SSD MobileNet
+        # Get the object predictions and annotate the frame - default to SSD MobileNet v2
         if model == YOLO3_MODEL:
             predictions = get_YOLO3_objects(frame, net, get_YOLO3_output_layers(net))
             found = objects_from_multi_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
