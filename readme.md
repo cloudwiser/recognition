@@ -51,8 +51,8 @@ $ python tf_text_graph_ssd.py --input ./ssd_mobilenet_v2_coco_2018_03_29/frozen_
 
 ```sh
 $ python3 recog.py --stream='http://192.168.0.1/video.cgi' --classes='./models/yolo3/yolo3.classes' --weights='./models/yolo3/yolo3.weights' --model='./models/yolo3/yolo3.cfg' 
-$ python3 recog.py --video=people.mpg   [ --classes=''  --weights=''  --model='' ]
-$ python3 recog.py  [ --classes=''  --weights=''  --model='' ]
+$ python3 recog.py --video=people.mpg  --classes='<path>'  --weights='<path>'  --model='<path>'
+$ python3 recog.py                     --classes='<path>'  --weights='<path>'  --model='<path>'
 (uses your local webcam as video source)
 ```
 
