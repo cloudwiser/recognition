@@ -1,27 +1,8 @@
-#### A psuedo-random set of notes that might help
+### recog : a brief set of notes that hopefully help
 
-##### Useful references
+##### Pre-requsiite : OpenCV
 
-https://github.com/opencv/opencv/wiki/TensorFlow-Object-Detection-API
-https://github.com/opencv/opencv_extra/tree/master/testdata/dnn
-
-##### Installation on Linux: (Mask RCNN example) 
-
-```sh
-$ wget http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
-$ tar zxvf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
-```
-
-##### Install on MacOS: (Mask RCNN example)
-
-```sh
-$ curl -O http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
-$ tar zxvf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
-```
-
-##### OpenCV installation:
-
-Install 4.0.0 - versions before 3.4.3 will throw CNN model exceptions given there was no cv.dnn functionality
+Please install 4.0.0 ideally or, if not available, v3.4.3+ as older versions will throw a CNN model exceptions given there is no cv.dnn functionality supported
 
 ```sh
 $ pip install opencv-python
@@ -33,44 +14,40 @@ If you are running without the need or access to an X server, there is the (ligh
 $ pip install opencv-python-headless
 ```
 
-##### Model weights and graphs:
+##### Pre-requisite : model weight files
 
-I have omitted the model weight files given they are huge and invariably exceed the GitHub repo limit.
+Each model requires a weights file to go with the pbtext or cfg file that describes the model architecture. Alas these weights files are huge to the point of exceeding the GitHub file upload limit so are not included here.
 
-Please take a look at the top of recog_argparse.py for the names of the relevant files to search for - some should be obtainable from the OpenCV DNN 'model zoo' page on GitHub.
+So...please take a look at the top of recog_argparse.py for the names of the relevant files to Google for...and I'll add links to the necessary files for SSD Mobilenet v1 & v2 and YOLO v3 models here
 
-TODO : add links here to the necessary files for SSD Mobilenet v1 & v2, YOLO v3 and Faster-RCNN models
+Once you have the weights file, place it in the relevant 'model' sub-directory and use the path & name with the --weights argument as shown in the next section
 
+##### Usage 
 
-##### TF graph creation:
+Run `python3 recog.py --help` for the full list of arguments which should be fairly self-explanatory.
 
-The pbtxt file for the associated CNN model architecture should be on the tf or opencv GitHub - see Useful References above - but, if not, can be generated thus:
-
-```sh
-$ python tf_text_graph_faster_rcnn.py --input /path/to/model.pb --config /path/to/example.config --output /path/to/graph.pbtxt
-```
-
-Example:
+The mandatory arguments are the `model` which defines which one should be used, `classes` which is the path to the text file contatining the list of objects the model was trained to recognise, `graph` which is the path to the text file defining the model architecture and `weights` which is the binary file containing the weights for the model. Note this latter file is not included and needs to be downloaded to your local `./models/...` directory (see above)
 
 ```sh
-$ python tf_text_graph_ssd.py --input ./ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb --config ./ssd_mobilenet_v2_coco.config --output ./ssd_mobilenet_v2_coco_2019_01_28.pbtxt
+$ python3 recog.py --stream='http://192.168.0.1/video.cgi' --classes='./models/yolo3/yolo3.classes' --weights='./models/yolo3/yolo3.weights' --graph='./models/yolo3/yolo3.cfg' --model='yolo3'
+$ python3 recog.py --video=people.mp4  --classes='<path>'  --weights='<path>'  --graph='<path>' --model='<ssd1, ssd2 or yolo3>'
+$ python3 recog.py                     --classes='<path>'  --weights='<path>'  --graph='<path>' --model='<ssd1, ssd2 or yolo3>'
+(no input source argument = use your local webcam as video source)
 ```
 
-##### Usage examples:
+##### Sample video : licence-free content for testing and threshold-tuning
 
-```sh
-$ python3 recog.py --stream='http://192.168.0.1/video.cgi' --classes='./models/yolo3/yolo3.classes' --weights='./models/yolo3/yolo3.weights' --model='./models/yolo3/yolo3.cfg' 
-$ python3 recog.py --video=people.mpg  --classes='<path>'  --weights='<path>'  --model='<path>'
-$ python3 recog.py                     --classes='<path>'  --weights='<path>'  --model='<path>'
-(uses your local webcam as video source)
-```
-
-##### Licence-free video clips for testing and paramter-tuning:
+If you a sample video file of people to tune/test or simply experiment, see the link below. The Pexel site also has other
+royalty-free
 
 https://videos.pexels.com/videos/time-lapse-video-of-runners-855789
 
 
-##### Headless OpenCV install on AWS Linux:
+##### Headless OpenCV install on AWS Linux
+
+The one-micro-instance-per-month is quite appealing and so I configure a micro EC2 instance to run recog. It requires some additional pre-requisites to be installed in order to build OpenCV 4 and, assuming you are running this without X as the output, one can also install the headless version of the OpenCV python package.
+
+Remember to add the `--headless` argument otherwise it will error
 
 ```sh
 $ sudo yum update
@@ -86,13 +63,29 @@ $ sudo pip install opencv-python
 $ pip install opencv-python-headless --user
 $ pip install supervisor
 ```
+The supervisor install is not mandatory but is is a great solution to running detached python-based processs given these may go zombie once you logout or close your ssh session into the EC2 instance.
 
-(see http://supervisord.org/introduction.html)
+See http://supervisord.org/introduction.html for more info on a very powerful package
 
 
-##### MPEG4 motion vector rendering:
+##### Background reading
+
+There are a ton of articles on Medium and elsewhere on the model architecture, performance (mAP accuracy vs inference speed), training and usage with OpenCV as we are doing here. But a couple of links to get started... 
+
+https://github.com/opencv/opencv/wiki/TensorFlow-Object-Detection-API
+https://github.com/opencv/opencv_extra/tree/master/testdata/dnn
+
+
+##### TensorFlow graph file creation
+
+You shouldn't need to recreate the pbtxt (graph) file but future changes in either Tensorflow and/or OpenCV dnn might necessitate it. Equally, if you decide to deploy a modified graph following re-training, the command line from the TF GH model repo is shown below...which I have not tested:
 
 ```sh
-$ ffplay -flags2 +export_mvs runners.mp4 -vf codecview=mv=pf+bf+bb
-$ ffmpeg -flags2 +export_mvs -i input.mp4 -vf codecview=mv=pf+bf+bb output.mp4
+$ python tf_text_graph_faster_rcnn.py --input /path/to/model.pb --config /path/to/example.config --output /path/to/graph.pbtxt
+```
+
+Example:
+
+```sh
+$ python tf_text_graph_ssd.py --input ./ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb --config ./ssd_mobilenet_v2_coco.config --output ./ssd_mobilenet_v2_coco_2019_01_28.pbtxt
 ```
