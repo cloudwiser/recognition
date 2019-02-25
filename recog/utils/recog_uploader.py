@@ -23,11 +23,11 @@ DEFAULT_OUTPATH = './out'
 # Parse arguments
 def get_arguments():
     parser = argparse.ArgumentParser(description='Use this script to run the recog FTP uploader')
-    parser.add_argument('--host', help='name of FTP host')
-    parser.add_argument('--user', help='FTP username')
-    parser.add_argument('--pwd', help='FTP password')
+    parser.add_argument('--host', help='name of FTP host', required=True)
+    parser.add_argument('--user', help='FTP username', required=True)
+    parser.add_argument('--pwd', help='FTP password', required=True)
     parser.add_argument('--out', help='path to local (recog output) directory')
-    parser.add_argument('--remote', help='path to remote upload directory')
+    parser.add_argument('--remote', help='path to remote upload directory', required=True)
     parser.add_argument('--delete', help='delete local files on upload', action='store_true')
     parser.add_argument('--interval', help='poll interval (secs)', type=int)
     args = parser.parse_args()
@@ -54,15 +54,9 @@ def get_arguments():
     if (args.remote):
         # Get the remote path used for uploading
         _remotepath = args.remote
-    else:
-        print("ERR: please provide a remote path to upload to")
-        sys.exit(1)
 
     if (args.host):
         _host = args.host
-    else:
-        print("ERR: please provide a FTP host to connect to")
-        sys.exit(1)
 
     if (args.user):
         _user = args.user
