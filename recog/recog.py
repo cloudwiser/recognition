@@ -7,7 +7,7 @@
 #
 # Also see https://github.com/opencv/opencv/tree/master/samples/dnn
 #
-# Nick Hall : cloudwise.co
+# Nick Hall
 # 
 # Copyright (c) 2019 cloudwise (http://cloudwise.co)
 # -------------------------------------------------

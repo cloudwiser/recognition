@@ -1,9 +1,9 @@
 # -------------------------------------------------
 # recog_argparse : command line arg parser
 #
-# Nick Hall : cloudwise.co
+# Nick Hall
 # 
-# copyright cloudwise consulting 2019
+# Copyright (c) 2019 cloudwise (http://cloudwise.co)
 # -------------------------------------------------
 
 import sys
