@@ -21,18 +21,19 @@ else:
 DEFAULT_SSD_MN1_THRESHOLD       = 0.4   # SSD MobileNet v1 confidence threshold
 DEFAULT_SSD_MN2_THRESHOLD       = 0.4   # SSD MobileNet v2 confidence threshold - was 0.3
 DEFAULT_YOLO3_THRESHOLD         = 0.75  # YOLO v3 confidence threshold
-DEFAULT_FASTER_RCNN_THRESHOLD   = 0.4   # Faster RCNN confidence threshold
+# DEFAULT_FASTER_RCNN_THRESHOLD = 0.4   # Faster RCNN confidence threshold
 
 DEFAULT_SSD_MN1_CLASS = {15}            # Person from the SSD MobileNet v1 Caffe traing set   
 DEFAULT_COCO_CLASS    = {1}             # Person from the COCO training set   
 DEFAULT_YOLO3_CLASS   = {0}             # Person from the YOLOv3 training set   
 DEFAULT_NMS_THRESHOLD = 0.4
 
-SSD_MN1_MODEL   = "ssdmn1"
-SSD_MN2_MODEL   = "ssdmn2"
-YOLO3_MODEL     = "yolo3"
-FASTER_RCNN_MODEL = "fasterrcnn"
+SSD_MN1_MODEL   = 'ssdmn1'
+SSD_MN2_MODEL   = 'ssdmn2'
+YOLO3_MODEL     = 'yolo3'
+# FASTER_RCNN_MODEL = "fasterrcnn"
 # MASK_RCNN_MODEL = "maskrcnn"
+SUPPORTED_MODELS = [SSD_MN1_MODEL, SSD_MN2_MODEL, YOLO3_MODEL]
 
 # MASK_RCNN_MODEL_PATH = "./mask_rcnn_inception_v2_coco_2018_01_28/"
 # MASK_RCNN_TEXT_GRAPH = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
@@ -57,8 +58,6 @@ FASTER_RCNN_MODEL = "fasterrcnn"
 # FASTER_RCNN_MODEL_WEIGHTS = FASTER_RCNN_MODEL_PATH + "frozen_inference_graph.pb"
 # FASTER_RCNN_MODEL_CLASSES = FASTER_RCNN_MODEL_PATH + "mscoco_labels.names"
 
-DEFAULT_OUTPUT_PATH = './out'
-
 NO_FRAME_WAIT       = (10)
 DEFAULT_POLL_WAIT   = (0)
 
@@ -75,12 +74,12 @@ def get_arguments():
     parser.add_argument('--blur', help='blur object region(s)', action='store_true')
     parser.add_argument('--threshold', help='set the detection threshold', type=float)
     parser.add_argument('--detect', help='[comma-delimited] list of model classes to detect', type=str)
-    parser.add_argument('--model', help='set to [yolo3 | ssdmn1 | ssdmn2]', type=str)
+    parser.add_argument('--model', help='select one from {}'.format(SUPPORTED_MODELS), choices=SUPPORTED_MODELS, type=str, required=True)
     parser.add_argument('--noframewait', help='wait time (secs) if no frame found', type=int)
     parser.add_argument('--interval', help='poll interval (secs)')
-    parser.add_argument('--weights', help='path to the weights file')
-    parser.add_argument('--graph', help='path to model graph file')
-    parser.add_argument('--classes', help='path to classes definition file')
+    parser.add_argument('--weights', help='path to the weights file', required=True)
+    parser.add_argument('--graph', help='path to model graph file', required=True)
+    parser.add_argument('--classes', help='path to classes definition file', required=True)
 
     args = parser.parse_args()
 
@@ -119,8 +118,6 @@ def get_arguments():
         _threshold = float(args.threshold)
     elif _model == YOLO3_MODEL:
         _threshold = DEFAULT_YOLO3_THRESHOLD
-    elif _model == FASTER_RCNN_MODEL:
-        _threshold = DEFAULT_FASTER_RCNN_THRESHOLD
     elif _model == SSD_MN1_MODEL:
         _threshold = DEFAULT_SSD_MN1_THRESHOLD
     else:

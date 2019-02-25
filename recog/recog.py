@@ -207,9 +207,9 @@ if __name__ == "__main__":
             found = objects_from_multi_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
         # elif model == MASK_RCNN_MODEL:
         #   predictions, masks = get_mask_RCNN_objects(frame, net, ['detection_out_final', 'detection_masks'])
-        elif model == FASTER_RCNN_MODEL:
-            predictions = get_Faster_RCNN_objects(frame, net, None)
-            found = objects_from_single_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
+        # elif model == FASTER_RCNN_MODEL:
+        #    predictions = get_Faster_RCNN_objects(frame, net, None)
+        #    found = objects_from_single_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
         elif model == SSD_MN1_MODEL:
             predictions = get_SSD_MobileNet1_objects(frame, net, None)
             found = objects_from_single_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
