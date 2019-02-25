@@ -45,9 +45,11 @@ https://videos.pexels.com/videos/time-lapse-video-of-runners-855789
 
 ##### Headless OpenCV install on AWS Linux
 
-The one-micro-instance-per-month is quite appealing and so I configure a micro EC2 instance to run recog. It requires some additional pre-requisites to be installed in order to build OpenCV 4 and, assuming you are running this without X as the output, one can also install the headless version of the OpenCV python package.
+The one-free-micro-instance-per-month on AWS is a nice bargain and I have configured a micro EC2 instance to run 2 instances of recog handling 2 separate RTSP video streams. Inference processing time will depend on model, stream resolution and number of recog instances obviously.
 
-Remember to add the `--headless` argument to the command line otherwise the script will error.
+It requires some additional pre-requisites to be installed in order to first build OpenCV 4 as below and, assuming you are running this without X as the output, you can also install the headless version of the OpenCV python package.
+
+Remember to add the `--headless` argument to the recog.py command line otherwise the script will error.
 
 ```sh
 $ sudo yum update
