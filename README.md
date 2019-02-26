@@ -2,13 +2,13 @@
 
 ##### Pre-requsiite : OpenCV
 
-Please install 4.0.0 ideally or, if not available, v3.4.3+ as older versions will throw a CNN model exceptions given there is no cv.dnn functionality supported
+Please install 4.0.0 ideally or, if not available, v3.4.3+ as older versions will throw a CNN model exceptions given there is no cv.dnn functionality supported.
 
 ```sh
 $ pip install opencv-python
 ```
 
-If you are running without the need or access to an X server, there is the (lighter-weight) headless python package which can be installed:
+If your environment is minus any UI output, there is the (lighter-weight) headless python package which can be installed:
 
 ```sh
 $ pip install opencv-python-headless
@@ -18,27 +18,27 @@ $ pip install opencv-python-headless
 
 Each model requires a weights file to go with the pbtext or cfg file that describes the model architecture. Alas these weights files are huge to the point of exceeding the GitHub file upload limit so are not included here.
 
-So...please take a look at the top of recog_argparse.py for the names of the relevant files to Google for...and I'll add links to the necessary files for SSD Mobilenet v1 & v2 and YOLO v3 models here
+So please review the header section of `recog_argparse.py` for the relevant weights file(s) to Google...and I'll add links to the necessary files for SSD Mobilenet v1 & v2 and YOLO v3 models here at some point.
 
-Once you have the weights file, place it in the relevant 'model' sub-directory and use the path & name with the --weights argument as shown in the next section
+Once you have downloaded the weights file, place it in the relevant 'model' sub-directory and use its path & name with the `--weights` argument as shown in the next section below.
 
 ##### Usage 
 
-Run `python3 recog.py --help` for the full list of arguments which should be fairly self-explanatory.
+Run `python3 recog.py --help` for the full list of arguments which should hopefully be self-explanatory.
 
-The mandatory arguments are the `model` which defines which one should be used, `classes` which is the path to the text file contatining the list of objects the model was trained to recognise, `graph` which is the path to the text file defining the model architecture and `weights` which is the binary file containing the weights for the model. Note this latter file is not included and needs to be downloaded to your local `./models/...` directory (see above)
+The mandatory arguments are the `model` which defines which model should be used, `classes` which is the path to the text file contatining the list of objects the model was trained on, `graph` which is the path to the text file defining the model architecture and `weights` which is a binary file containing all the weights for the model. Note this latter file is not included and needs to be downloaded to your local `./models/...` directory as mentioned above.
 
 ```sh
 $ python3 recog.py --stream='http://192.168.0.1/video.cgi' --classes='./models/yolo3/yolo3.classes' --weights='./models/yolo3/yolo3.weights' --graph='./models/yolo3/yolo3.cfg' --model='yolo3'
-$ python3 recog.py --video=people.mp4  --classes='<path>'  --weights='<path>'  --graph='<path>' --model='<ssd1, ssd2 or yolo3>'
-$ python3 recog.py                     --classes='<path>'  --weights='<path>'  --graph='<path>' --model='<ssd1, ssd2 or yolo3>'
+$ python3 recog.py --video=people.mp4  --classes='<path>'  --weights='<path>'  --graph='<path>' --model='<ssdmn1, ssdmn2 or yolo3>'
+$ python3 recog.py                     --classes='<path>'  --weights='<path>'  --graph='<path>' --model='<ssdmn1, ssdmn2 or yolo3>'
 (no input source argument = use your local webcam as video source)
 ```
 
 ##### Sample video : licence-free content for testing and threshold-tuning
 
 If you require a sample video file of people objects aka persons to tune or test or simply experiment with, see the link below. 
-The Pexel site also has other royalty-free content that may be relevant
+The Pexel site also has other royalty-free content that may be relevant.
 
 https://videos.pexels.com/videos/time-lapse-video-of-runners-855789
 
