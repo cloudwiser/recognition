@@ -16,9 +16,11 @@ $ pip install opencv-python-headless
 
 ##### Pre-requisite : model weight files
 
-Each model requires a weights file to go with the pbtext or cfg file that describes the model architecture. Alas these weights files are huge to the point of exceeding the GitHub file upload limit so are not included here.
+Each model requires a weights file to go with the pbtext or cfg file that describes the model architecture. 
 
-So please review the header section of `recog_argparse.py` for the relevant weights file(s) to Google...and I'll add links to the necessary files for SSD Mobilenet v1 & v2 and YOLO v3 models here at some point.
+The SSD MobileNet v1 file is in the repo but the SSD v2 and YOLO v3 weights files are huge to the point of exceeding the GitHub file upload limit and are not included.
+
+If you wish to use these models, please review the top of `recog_argparse.py` for the relevant filename(s) to Google...although I'll add links to the necessary files here at some point.
 
 Once you have downloaded the weights file, place it in the relevant 'model' sub-directory and use its path & name with the `--weights` argument as shown in the next section below.
 
