@@ -31,10 +31,12 @@ Run `python3 recog.py --help` for the full list of arguments which should hopefu
 The mandatory arguments are the `model` which defines which model should be used, `classes` which is the path to the text file contatining the list of objects the model was trained on, `graph` which is the path to the text file defining the model architecture and `weights` which is a binary file containing all the weights for the model. Note this latter file is not included and needs to be downloaded to your local `./models/...` directory as mentioned above.
 
 ```sh
-$ python3 recog.py --stream='http://192.168.0.1/video.cgi' --classes='./models/yolo3/yolo3.classes' --weights='./models/yolo3/yolo3.weights' --graph='./models/yolo3/yolo3.cfg' --model='yolo3'
-$ python3 recog.py --video=people.mp4  --classes='<path>'  --weights='<path>'  --graph='<path>' --model='<ssdmn1, ssdmn2 or yolo3>'
-$ python3 recog.py                     --classes='<path>'  --weights='<path>'  --graph='<path>' --model='<ssdmn1, ssdmn2 or yolo3>'
-(no input source argument = use your local webcam as video source)
+$ python3 recog.py --stream='http://192.168.0.1/video.cgi' --showlabels --headless --model='yolo3' --classes='./models/yolo3/yolo3.classes' --weights='./models/yolo3/yolo3.weights' --graph='./models/yolo3/yolo3.cfg' --out='../out'
+
+$ python3 recog.py --video='../runners.mp4' --showlabels  --model='ssdmn1' --graph='./models/ssdmn1/deploy.prototxt' --weights='./models/ssdmn1/mobilenet_iter_73000.caffemodel' --classes='./models/ssdmn1/ssdmn1.classes' --out='../out'
+
+$ python3 recog.py --model='<ssdmn1, ssdmn2 or yolo3>' --graph='<path>' --weights='<path>' --classes='<path>'    
+(no input source argument = use your webcam)
 ```
 
 ##### Sample video : licence-free content for testing and threshold-tuning
