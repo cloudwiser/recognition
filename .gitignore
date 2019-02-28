@@ -12,7 +12,6 @@
 *.data-00000-of-00001
 *.index
 *.meta
-*.caffemodel
 *.config
 *.sh
 recog/models/ssdmn2/ssd_mobilenet_v2_coco_2018_03_29/checkpoint
