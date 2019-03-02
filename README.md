@@ -71,7 +71,9 @@ See http://supervisord.org/introduction.html for more info on what is an amazing
 
 This is a simple FTP uploader script that monitors a local directory and copies or moves local image files to a remote directory hosted on a FTP server.
 
-See the example `config.ini` file in the repo for info on the settable parameters and what they are used for.
+`$ python3 recog_uploader.py --config=<path_to_config_file>`
+
+See the example `[Upload]` section in the `config.ini` file in the repo for info on the settable parameters and what they are used for.
 
 At the time of writing, the script doesn't support anonymous FTP login. Another TODO or...
 
