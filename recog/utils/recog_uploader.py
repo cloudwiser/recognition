@@ -12,67 +12,51 @@ import argparse
 from os import listdir, remove
 from os.path import isfile, join, exists
 import time
+from configparser import ConfigParser, ExtendedInterpolation
 
 # -------------------------------------------------
 
-DEFAULT_SLEEP_INTERVAL = (10)   # secs to sleep between scans
-DEFAULT_OUTPATH = './out'
+DEFAULT_INTERVAL    = (10)   # secs to sleep between scans
+DEFAULT_LOCALPATH   = './out'
+DEFAULT_REMOTEPATH  = './'
 
 # -------------------------------------------------
 
 # Parse arguments
 def get_arguments():
     parser = argparse.ArgumentParser(description='Use this script to run the recog FTP uploader')
-    parser.add_argument('--host', help='name of FTP host', required=True)
-    parser.add_argument('--user', help='FTP username', required=True)
-    parser.add_argument('--pwd', help='FTP password', required=True)
-    parser.add_argument('--out', help='path to local (recog output) directory')
-    parser.add_argument('--remote', help='path to remote upload directory', required=True)
-    parser.add_argument('--delete', help='delete local files on upload', action='store_true')
-    parser.add_argument('--interval', help='poll interval (secs)', type=int)
+
     args = parser.parse_args()
 
-    _host = None
-    _user = None
-    _password = None
-    _outpath = DEFAULT_OUTPATH
-    _remotepath = None
-    _delete = False
-    _interval = DEFAULT_SLEEP_INTERVAL
+    # Validate the configh file path
+    if not isfile(args.config):
+        print("ERR: config file: ", args.config, " not found")
+        sys.exit(1)
 
-    if (args.delete):
-        _delete = True
+    # Read the configuration file
+    config = ConfigParser(interpolation=ExtendedInterpolation())
+    config.read(args.config)
 
-    if (args.out):
-        # Get the local path - defined by "recog.py --out=<path>""
-        if not exists(args.out):
-            print("ERR: output path:", args.out, " doesn't exist...exiting:", args.out)
+    _host = config['Upload']['Host']
+    _user = config['Upload']['Username']
+    _password = config['Upload']['Password']
+    _localpath = config.get('Upload', 'LocalPath', fallback=DEFAULT_LOCALPATH)
+    _remotepath = config.get('Upload', 'RemotePath', fallback=DEFAULT_REMOTEPATH)
+    _delete = config['Upload'].getboolean('LocalDelete', fallback=False)
+    _interval = config['Upload'].getint('UploadInterval', fallback=DEFAULT_INTERVAL)
+
+    if (_localpath):
+        if not exists(_localpath):
+            print("ERR: local path:", _localpath, " not found")
             sys.exit(1)
-        else:
-            _outpath = args.out
-
-    if (args.remote):
-        # Get the remote path used for uploading
-        _remotepath = args.remote
-
-    if (args.host):
-        _host = args.host
-
-    if (args.user):
-        _user = args.user
-
-    if (args.pwd):
-        _pwd = args.pwd
-
-    if (args.interval):
-        _interval = int(args.interval)
-    return _host, _user, _pwd, _outpath, _remotepath, _delete, _interval
+   
+    return _host, _user, _password, _localpath, _remotepath, _delete, _interval
 
 # -------------------------------------------------
 
 if __name__ == '__main__':
     # Extract the various command line parameters
-    host, user, pwd, outpath, remotepath, delete, interval = get_arguments()
+    host, user, pwd, localpath, remotepath, delete, interval = get_arguments()
     
     try:
         ftp = ftplib.FTP(host, user, pwd)
@@ -90,8 +74,8 @@ if __name__ == '__main__':
 
     while True:
         # Get list of local filenames to upload
-        print('INFO: scanning {}'.format(outpath))
-        filenames = [f for f in listdir(outpath) if isfile(join(outpath, f))]
+        print('INFO: scanning {}'.format(localpath))
+        filenames = [f for f in listdir(localpath) if isfile(join(localpath, f))]
 
         if delete:
             print('INFO: uploading AND deleting...{}'.format(filenames))
@@ -100,7 +84,7 @@ if __name__ == '__main__':
 
         # Attempt to upload each file to the remote destination
         for filename in filenames:
-            localpathfile = join(outpath, filename)
+            localpathfile = join(localpath, filename)
             try:
                 with open(localpathfile, 'rb') as lf:
                     ftp.storbinary('STOR ' + filename, lf)
