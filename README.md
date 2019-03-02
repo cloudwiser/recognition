@@ -73,7 +73,7 @@ This is a simple FTP uploader script that monitors a local directory and copies 
 
 See the example `config.ini` file in the repo for info on the settable parameters and what they are used for.
 
-At the time of writing, the script doesn't support anonymous FTP login nor check for the presence of previously uploaded image files. Another TODO's or...
+At the time of writing, the script doesn't support anonymous FTP login. Another TODO or...
 
 
 ##### Pull requests

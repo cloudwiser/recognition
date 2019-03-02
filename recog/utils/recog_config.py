@@ -49,7 +49,7 @@ def get_config_file_timestamp(file_path):
 # Parse config file for configuration
 def get_config_file_parameters():
     parser = argparse.ArgumentParser(description='CNN-based oject recogniser | cloudwise.co | 2019')
-    parser.add_argument('--config', help='path to config file', type=str, required=True)
+    parser.add_argument('--config', help='path to config.ini file', type=str, required=True)
 
     args = parser.parse_args()
 
