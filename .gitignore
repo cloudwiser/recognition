@@ -7,14 +7,15 @@
 *.jpg
 *.pb
 *.pyc
-*.config
 */checkpoint
 *.data-00000-of-00001
 *.index
 *.meta
-*.config
 *.sh
 recog/models/ssdmn2/ssd_mobilenet_v2_coco_2018_03_29/checkpoint
 recog/models/maskrcnn/mask_rcnn_inception_v2_coco_2018_01_28/checkpoint
 recog/models/maskrcnn/mask_rcnn_inception_v2_coco_2018_01_28.pbtxt
 supervisord.conf
+private.config
+recog/models/maskrcnn/mask_rcnn_inception_v2_coco_2018_01_28/pipeline.config
+recog/models/ssdincept2/ssd_inception_v2_coco.config

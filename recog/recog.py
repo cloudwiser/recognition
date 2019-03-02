@@ -18,7 +18,7 @@ import numpy as np
 import datetime
 import time
 
-from utils.recog_argparse import *
+from utils.recog_config import *
 from utils.recog_dnn import *
 
 # -------------------------------------------------
@@ -170,7 +170,7 @@ def show_labels(frame, top, left, class_id, classes, score):
 if __name__ == "__main__":
     # Extract the various command line parameters
     capture, outpath, headless, showlabels, threshold, \
-        detect, blur, model, noframewait, interval, graph, weights, classes = get_arguments()
+        detect, blur, model, noframewait, interval, graph, weights, classes = get_config_file_parameters()
 
     # Load the relevant classes and model
     if model == YOLO3_MODEL:
