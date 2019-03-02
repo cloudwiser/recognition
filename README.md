@@ -20,7 +20,7 @@ Each model requires a weights file to go with the pbtext or cfg file that descri
 
 The SSD MobileNet v1 file is in the repo but the SSD v2 and YOLO v3 weights files are huge to the point of exceeding the GitHub file upload limit and are not included.
 
-If you wish to use these models, please review the models sections of `sample.config` for the relevant filename(s) to Google...although I'll add links to the necessary files here at some point.
+If you wish to use these models, please review the models sections of `config.ini` for the relevant filename(s) to Google...although I'll add links to the necessary files here at some point.
 
 Once you have the weights file, place it in the relevant 'model' sub-directory, configure the `WeightsPath` parameter in the relevant `[<model>]` section and, if necessary, also set the `Model` paramter in the `[DEFAULT]` section.
 
@@ -28,7 +28,7 @@ Once you have the weights file, place it in the relevant 'model' sub-directory, 
 
 `$ python3 recog.py --config=<path_to_config_file>`
 
-See the `sample.config` file in the repo for the settable parameters and what they are used for.
+See the example `config.ini` file in the repo for info on the settable parameters and what they are used for.
 
 
 ##### Sample video : licence-free content for testing and threshold-tuning
@@ -45,7 +45,7 @@ The one-free-micro-instance-per-month on AWS is a nice bargain and I have config
 
 It requires some additional pre-requisites to be installed in order to first build OpenCV 4 as below and, assuming you are running this without X as the output, you can also install the headless version of the OpenCV python package.
 
-Remember to set the `Headless` paramter in the `[DEFAULT]` section to `true` otherwise the script will error.
+Remember to set the `Headless` paramter in the `[DEFAULT]` section to `true` in the `config.ini` file otherwise the script will error.
 
 ```sh
 $ sudo yum update
@@ -61,15 +61,15 @@ $ sudo pip install opencv-python
 $ pip install opencv-python-headless --user
 $ pip install supervisor
 ```
-The `supervisor` install is not mandatory but is is a great solution to running detached python-based processs on Linux.
-Important if you are wanting to run continously and unattended as these processes may go zombie once you logout or close your ssh session into the EC2 instance.
+The `supervisor` install is not mandatory but is is an excellent solution for running detached python-based processs on Linux.
+This is key if you are wanting to run continously and unattended given these processes can go zombie once you logout or close your ssh session into the EC2 instance.
 
 See http://supervisord.org/introduction.html for more info on what is an amazingly feature-rich package.
 
 
 ##### Image upload via recog_uploader
 
-This is a simple FTP uploader script that monitors a local directory and copies or moves image files placed in the `OutPath` config setting by `recog.py` to a remote directory hosted on a FTP server.
+This is a simple FTP uploader script that monitors a local directory and copies or moves image files placed in the `OutPath` setting in the `config.ini` file to a remote directory hosted on a FTP server.
 
 See `python3 recog_uploader.py --help` for the set of arguments available and, in the case of `host`, `username` and `password` required.
 
