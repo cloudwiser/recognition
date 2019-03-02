@@ -9,7 +9,7 @@
 import sys
 import cv2 as cv
 import argparse
-from os import mkdir
+from os import mkdir, stat
 from os.path import isfile, exists
 if sys.version_info.major == 3:
     from urllib.parse import urlparse   # Python 3.x
@@ -33,12 +33,18 @@ from configparser import ConfigParser, ExtendedInterpolation
 
 # -------------------------------------------------
 
-DEFAULT_MODEL           = 'ssdmn1'
+SSD_MN1_MODEL           = 'ssdmn1'
+SSD_MN2_MODEL           = 'ssdmn2'
+YOLO3_MODEL             = 'yolo3'
+
+DEFAULT_MODEL           = SSD_MN1_MODEL
 DEFAULT_FRAME_WAIT      = (10)
 DEFAULT_INTERVAL        = (0)
 DEFAULT_NMS_THRESHOLD   = 0.4
 
 # -------------------------------------------------
+def get_config_file_timestamp(file_path):
+    return stat(file_path)[8] # 10 attributes in this call and timestamp is the next to last
 
 # Parse config file for configuration
 def get_config_file_parameters():
@@ -104,7 +110,7 @@ def get_config_file_parameters():
         sys.exit(1)
     if not isfile(_classes):
         print("ERR: classes file: ", _classes, " not found")
-        sys.exit(1)    
+        sys.exit(1)
 
     return _capture, _outpath, _headless, _showlabels, _threshold, \
         _detect, _blur, _model, _noframewait, _interval, _graph, _weights, _classes

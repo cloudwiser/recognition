@@ -41,7 +41,7 @@ def objects_from_single_layer_output(frame, classes, detect_classes, predictions
 
     # Obfuscate the frame for privacy?
     if blur:
-        cv.GaussianBlur(frame, (23, 23), 30)
+        frame = cv.GaussianBlur(frame, (23, 23), 30)
 
     for detection in predictions[0, 0, :, :]:
         score = detection[2]
@@ -87,7 +87,7 @@ def objects_from_multi_layer_output(frame, classes, detect_classes, predictions,
 
     # Obfuscate the frame for privacy?
     if blur:
-        cv.GaussianBlur(frame, (23, 23), 30)
+        frame = cv.GaussianBlur(frame, (23, 23), 30)
 
     # For YOLO v3, we have multiple output layers as opposed to the single layer in SSD et al...
     for out in predictions:
@@ -173,15 +173,15 @@ if __name__ == "__main__":
         detect, blur, model, noframewait, interval, graph, weights, classes = get_config_file_parameters()
 
     # Load the relevant classes and model
-    if model == YOLO3_MODEL:
-        classes = load_YOLO3_classes(classes)
-        net = load_YOLO3_net(weights, graph)
-    elif model == SSD_MN1_MODEL:
+    if model == SSD_MN1_MODEL:
         classes = load_COCO_classes(classes)
         net = load_Caffe_net(weights, graph)
-    else:
+    elif model == SSD_MN2_MODEL:
         classes = load_COCO_classes(classes)
         net = load_TF_net(weights, graph)
+    elif model == YOLO3_MODEL:
+        classes = load_YOLO3_classes(classes)
+        net = load_YOLO3_net(weights, graph)
 
     # Set the output window name (assuming there is a GUI output path)
     if not headless:
@@ -202,27 +202,27 @@ if __name__ == "__main__":
             height, width = frame.shape[:2]
 
         # Get the object predictions and annotate the frame - default to SSD MobileNet v2
-        if model == YOLO3_MODEL:
-            predictions = get_YOLO3_objects(frame, net, get_YOLO3_output_layers(net))
-            found = objects_from_multi_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
-        elif model == SSD_MN1_MODEL:
+        if model == SSD_MN1_MODEL:
             predictions = get_SSD_MobileNet1_objects(frame, net, None)
             found = objects_from_single_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
-        else:   # model == SSD_MN2_MODEL:
+        elif model == SSD_MN2_MODEL:
             predictions = get_SSD_MobileNet2_objects(frame, net, None)
             found = objects_from_single_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
+        elif model == YOLO3_MODEL:
+            predictions = get_YOLO3_objects(frame, net, get_YOLO3_output_layers(net))
+            found = objects_from_multi_layer_output(frame, classes, detect, predictions, threshold, showlabels, blur)
 
         # Watermark the frame
-        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        now = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         t, _ = net.getPerfProfile()
         performance = ' : infer=%0.0fms' % abs(t * 1000.0 / cv.getTickFrequency())
         modelused = ' : ' + model + '@' + str(width) + 'x' + str(height)
-        label = APP_NAME + timestamp + performance + modelused
+        label = APP_NAME + now + performance + modelused
         cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, CV_TEXT_SIZE, (0, 0, 0), 1)
 
         # Write the frame to output directory
         if found > 0 and outpath:
-            outputFile = outpath + '/' + timestamp + '.jpg'
+            outputFile = outpath + '/' + now + '.jpg'
             cv.imwrite(outputFile, frame.astype(np.uint8))
 
         # Display the frame to X if there is a GUI path
