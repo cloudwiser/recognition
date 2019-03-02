@@ -81,12 +81,12 @@ This is a simple FTP uploader script that monitors a local directory and copies 
 
 See `python3 recog_uploader.py --help` for the set of arguments available and, in the case of `host`, `username` and `password` required.
 
-At the time of writing, the script doesn't support anonymous FTP login nor check for the presence of previously uploaded image files. Another couple of TODO's...or pull request ;-)
+At the time of writing, the script doesn't support anonymous FTP login nor check for the presence of previously uploaded image files. Another TODO's or...
 
 
 ##### Pull requests
 
-Always welcome :-)
+These are very welcome :-)
 
 
 ##### Background reading
