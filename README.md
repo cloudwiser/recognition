@@ -36,7 +36,7 @@ $ python3 recog.py --stream='http://192.168.0.1/video.cgi' --showlabels --headle
 $ python3 recog.py --video='../runners.mp4' --showlabels  --model='ssdmn1' --graph='./models/ssdmn1/deploy.prototxt' --weights='./models/ssdmn1/mobilenet_iter_73000.caffemodel' --classes='./models/ssdmn1/ssdmn1.classes' --out='../out'
 
 $ python3 recog.py --model='<ssdmn1, ssdmn2 or yolo3>' --graph='<path>' --weights='<path>' --classes='<path>'    
-(no input source argument = use your webcam)
+# if you don't provide an input source argument, recog will attempt to use your local webcam
 ```
 
 ##### Sample video : licence-free content for testing and threshold-tuning
