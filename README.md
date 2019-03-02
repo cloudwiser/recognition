@@ -2,7 +2,7 @@
 
 ##### Pre-requsiite : OpenCV
 
-Please install 4.0.0 ideally or, if not available, v3.4.3+ as older versions will throw a CNN model exceptions given there is no cv.dnn functionality supported.
+Please install/build OpenCV 4 or later given versions prior to v3.4.3 will throw a CNN model exception given the lack of `cv.dnn` support.
 
 ```sh
 $ pip install opencv-python
