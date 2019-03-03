@@ -54,7 +54,7 @@ def get_arguments():
     return _host, _user, _password, _localpath, _remotepath, _localdelete
 
 # File creation watcher : see watchdog package for more info
-class ImagesWatcher:
+class images_watcher:
     def __init__(self, localpath):
         self.__localpath = localpath
         self.__event_handler = ImagesEventHandler()
@@ -103,7 +103,7 @@ class ImagesEventHandler(RegexMatchingEventHandler):
         _pathfilename = event.src_path
         # print("DEBUG: file created: " + _pathfilename)
         # Split the filename from full path
-        path, filename = split(_pathfilename)
+        _ , filename = split(_pathfilename)
         # Push file to remote path
         try:
             with open(_pathfilename, 'rb') as lf:
@@ -138,7 +138,7 @@ if __name__ == '__main__':
         ftp.quit()
         sys.exit(1)
 
-    ImagesWatcher(localpath).run()
+    images_watcher(localpath).run()
     
     # FTP tidy-up
     ftp.quit()
