@@ -41,19 +41,19 @@ https://videos.pexels.com/videos/time-lapse-video-of-runners-855789
 
 ##### OpenCV 4 install on Raspberry Pi Zero W
 
-To provide a compact-albeit-low-power local inference on 2 webcam streams, I configured a Raspberry Pi Zero W with OpeNCV 4.
+To provide a compact-albeit-low-power local inference soluton for 2 webcam streams, I configured a Raspberry Pi Zero W with OpeNCV 4.
 
 If you are starting from scratch, download and flash Raspbian Stretch Lite onto a 32GB SDD (I can guarantee that an 8GB SDD
-isn't large enough for a full `make`)
+isn't large enough and the `make` will fail at the end of 15 hours!)
 
-On the SSD `/root` enable SSH via `touch ssh` and add a `wpa_supplicant.conf` file with your WiFi credentials. 
-Eject it, insert into the Zero W and check you have `ssh` access over WiFi
-Expand the filesystem using `raspi-config` and then do a `sudo reboot now`
+On the SSD `/root`, enable SSH via `touch ssh` and add a `wpa_supplicant.conf` file with your WiFi credentials. 
+Eject it, insert into the Zero W and check you can `ssh` access over WiFi
+Expand the filesystem using `raspi-config` and do a `sudo reboot now`
 
-The install steps below are based on those at https://www.pyimagesearch.com/2018/09/26/install-opencv-4-on-your-raspberry-pi/
-BUT be aware the `make` can take a very long time on a RPi Zero...so you may want to look at building the image on RPi 3 instead.
+The install steps below are based on https://www.pyimagesearch.com/2018/09/26/install-opencv-4-on-your-raspberry-pi/
+BUT be aware the `make` can take a very long time on a RPi Zero...so you may want to look at other cross-compile solutions.
 
-Anyway, if you do proceed with the Zero W build below, don't forget to back-up the final SSD image in case it gets corrupted! 
+Anyway, if you do want a native Zero W build see below...and don't forget to back-up the final SSD image in case it gets corrupted! 
 
 ```sh
 $ sudo apt-get upgrade
@@ -102,7 +102,7 @@ $ sudo /etc/init.d/dphys-swapfile stop
 $ sudo /etc/init.d/dphys-swapfile start
 
 # Note: 'make j4' aka multi-core is not supported on the Zero W so this will be slow
-# ...allow ~24 hours!
+# ...allow ~18 hours!
 $ make
 
 $ sudo make install
@@ -120,7 +120,8 @@ $ cd ~/.local/lib/python3.5/site-packages/
 $ ln -s /usr/local/python/cv2/python-3.5/cv2.cpython-35m-arm-linux-gnueabihf.so cv2.so
 $ cd ~
 
-# supervisor install for python 2.7
+# supervisor install for python 3+ 
+# ...at the time of writing a production release of python 3 supervisor has still to be made to PyPi
 $ sudo apt-get install python-pip git
 $ pip install git+https://github.com/Supervisor/supervisor@master
 ```
