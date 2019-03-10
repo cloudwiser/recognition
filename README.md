@@ -39,32 +39,124 @@ The Pexel site also has other royalty-free content that may be relevant.
 https://videos.pexels.com/videos/time-lapse-video-of-runners-855789
 
 
-##### Headless OpenCV install on AWS Linux
+##### OpenCV 4 install on Raspberry Pi Zero W
+
+To provide a compact-albeit-low-power local inference on 2 webcam streams, I configured a Raspberry Pi Zero W with OpeNCV 4.
+
+If you are starting from scratch, download and flash Raspbian Stretch Lite onto a 32GB SDD (I can guarantee that an 8GB SDD
+isn't large enough for a full `make`)
+
+On the SSD `/root` enable SSH via `touch ssh` and add a `wpa_supplicant.conf` file with your WiFi credentials. 
+Eject it, insert into the Zero W and check you have `ssh` access over WiFi
+Expand the filesystem using `raspi-config` and then do a `sudo reboot now`
+
+The install steps below are based on those at https://www.pyimagesearch.com/2018/09/26/install-opencv-4-on-your-raspberry-pi/
+BUT be aware the `make` can take a very long time on a RPi Zero...so you may want to look at building the image on RPi 3 instead.
+
+Anyway, if you do proceed with the Zero W build below, don't forget to back-up the final SSD image in case it gets corrupted! 
+
+```sh
+$ sudo apt-get upgrade
+$ sudo apt-get update
+$ sudo apt-get install python3-pip
+$ sudo apt-get install cmake
+
+$ sudo apt-get install libjpeg-dev libpng-dev libtiff-dev
+$ sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev libv4l-dev
+$ sudo apt-get install libxvidcore-dev libx264-dev
+
+$ sudo apt-get install libgtk-3-dev
+$ sudo apt-get install libcanberra-gtk*
+$ sudo apt-get install libatlas-base-dev gfortran
+
+$ cd ~
+$ wget -O opencv.zip https://github.com/opencv/opencv/archive/4.0.0.zip
+$ wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/4.0.0.zip
+$ unzip opencv.zip
+$ unzip opencv_contrib.zip
+$ mv opencv-4.0.0 opencv
+$ mv opencv_contrib-4.0.0 opencv_contrib
+# Omit the virtual environment-related installs given this will be single environment
+
+$ cd ~/opencv
+$ mkdir build
+$ cd build
+
+# Neither NEON nor VFPv3 is supported on ARM6 i.e. Zero W - try enabling VFPv2 (assuming it's a valid build flag)
+$ cmake -D CMAKE_BUILD_TYPE=RELEASE \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
+    -D ENABLE_NEON=OFF \
+    -D ENABLE_VFPV2=ON \
+    -D BUILD_TESTS=OFF \
+    -D OPENCV_ENABLE_NONFREE=ON \
+    -D INSTALL_PYTHON_EXAMPLES=OFF \
+    -D BUILD_EXAMPLES=OFF ..
+
+$ sudo nano /etc/dphys-swapfile
+    # Increase the swap size otherwise 'make' will fail 
+    # CONF_SWAPSIZE=100
+    CONF_SWAPSIZE=2048
+
+$ sudo /etc/init.d/dphys-swapfile stop
+$ sudo /etc/init.d/dphys-swapfile start
+
+# Note: 'make j4' aka multi-core is not supported on the Zero W so this will be slow
+# ...allow ~24 hours!
+$ make
+
+$ sudo make install
+$ sudo ldconfig
+
+$ sudo nano /etc/dphys-swapfile
+    # Change the swap size back to the default setting
+    CONF_SWAPSIZE=100
+    # CONF_SWAPSIZE=2048
+
+$ sudo /etc/init.d/dphys-swapfile stop
+$ sudo /etc/init.d/dphys-swapfile start
+
+$ cd ~/.local/lib/python3.5/site-packages/
+$ ln -s /usr/local/python/cv2/python-3.5/cv2.cpython-35m-arm-linux-gnueabihf.so cv2.so
+$ cd ~
+
+# supervisor install for python 2.7
+$ sudo apt-get install python-pip git
+$ pip install git+https://github.com/Supervisor/supervisor@master
+```
+
+##### OpenCV 4 install on AWS Linux
 
 The one-free-micro-instance-per-month on AWS is a nice bargain and I have configured a micro EC2 instance to run 2 instances of recog handling 2 separate RTSP video streams. Inference processing time will depend on model, stream resolution and number of recog instances obviously.
 
-It requires some additional pre-requisites to be installed in order to first build OpenCV 4 as below and, assuming you are running this without X as the output, you can also install the headless version of the OpenCV python package.
+It requires some additional pre-requisites to be installed in order to first build OpenCV 4 as below for python 2.7 and, assuming you are running this without X as the output, install the headless version of the OpenCV python package.
 
 Remember to set the `Headless` paramter in the `[DEFAULT]` section to `true` in the `config.ini` file otherwise the script will error.
 
 ```sh
 $ sudo yum update
 $ sudo yum install git cmake gcc-c++ cmake3
+
 $ git clone https://github.com/Itseez/opencv.git
 $ cd opencv
 $ mkdir ./build
 $ git checkout
 $ cd ./build
+
 $ cmake3 ../
+
 $ sudo yum install numpy python-devel pip
 $ sudo pip install opencv-python
 $ pip install opencv-python-headless --user
+
+# supervisor install for python 2.7
 $ pip install supervisor
 ```
+
 The `supervisor` install is not mandatory but is is an excellent solution for running detached python-based processs on Linux.
 This is key if you are wanting to run continously and unattended given these processes can go zombie once you logout or close your ssh session into the EC2 instance.
 
-See http://supervisord.org/introduction.html for more info on what is an amazingly feature-rich package.
+See http://supervisord.org/introduction.html for more info on an very feature-rich package.
 
 
 ##### Image upload via recog_uploader
