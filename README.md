@@ -41,19 +41,19 @@ https://videos.pexels.com/videos/time-lapse-video-of-runners-855789
 
 ##### OpenCV 4 install on Raspberry Pi Zero W
 
-To provide a compact-albeit-low-power local inference soluton for 2 webcam streams, I configured a Raspberry Pi Zero W with OpeNCV 4.
+A word of warning on this : although recog works on an Pi Zero W, inference is really slow e.g. for the SSD v1 model, it was taking 250 secs for person detecting in a 1920 x 1080 frame
 
-If you are starting from scratch, download and flash Raspbian Stretch Lite onto a 32GB SDD (I can guarantee that an 8GB SDD
-isn't large enough and the `make` will fail at the end of 15 hours!)
+But, if you are still keen, download and flash the official Raspbian Stretch Lite image onto a 32GB SDD
+Note: I can guarantee that an 8GB SDD isn't large enough and the `make` will then fail at the end of ~15 hours!
 
-On the SSD `/root`, enable SSH via `touch ssh` and add a `wpa_supplicant.conf` file with your WiFi credentials. 
+In the SSD `/root` directory, enable SSH via `touch ssh` and add a `wpa_supplicant.conf` file with your WiFi credentials
 Eject it, insert into the Zero W and check you can `ssh` access over WiFi
-Expand the filesystem using `raspi-config` and do a `sudo reboot now`
+Then expand the filesystem using `raspi-config` and do a `sudo reboot now`
 
 The install steps below are based on https://www.pyimagesearch.com/2018/09/26/install-opencv-4-on-your-raspberry-pi/
-BUT be aware the `make` can take a very long time on a RPi Zero...so you may want to look at other cross-compile solutions.
+BUT the `make` can take a very long time on a RPi Zero...so you may want to look at a cross-compile solution
 
-Anyway, if you do want a native Zero W build see below...and don't forget to back-up the final SSD image in case it gets corrupted! 
+Finally, having gone through the build steps below, don't forget to back-up the final SSD image in case it gets corrupted!
 
 ```sh
 $ sudo apt-get upgrade
@@ -82,7 +82,7 @@ $ cd ~/opencv
 $ mkdir build
 $ cd build
 
-# Neither NEON nor VFPv3 is supported on ARM6 i.e. Zero W - try enabling VFPv2 (assuming it's a valid build flag)
+# Neither NEON nor VFPv3 is supported on arm6 i.e. Zero W ...but try enabling VFPv2 (assuming it's a valid build flag)
 $ cmake -D CMAKE_BUILD_TYPE=RELEASE \
     -D CMAKE_INSTALL_PREFIX=/usr/local \
     -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
